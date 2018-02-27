@@ -8,10 +8,10 @@
  * file that was distributed with this source code.
  */
 
-namespace passport\classes;
+namespace passport\classes\model;
 
-interface IOauth {
-	public function check($data);
+use wulaphp\db\Table;
 
-	public function getName();
+class OauthSessionTable extends Table {
+
 }

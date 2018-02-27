@@ -9,9 +9,8 @@
                             <i class="fa fa-plus"></i> {'Add'|t}
                         </a>
                         <div class="btn-group">
-                            <a href="{'system/account/users/del'|app}" data-ajax
-                               data-grp="#table tbody input.grp:checked" data-confirm="你真的要删除这些用户吗？"
-                               data-warn="请选择要删除的用户" class="btn btn-danger btn-sm"><i
+                            <a href="{'passport/del'|app}" data-ajax data-grp="#table tbody input.grp:checked"
+                               data-confirm="你真的要删除这些用户吗？" data-warn="请选择要删除的用户" class="btn btn-danger btn-sm"><i
                                         class="fa fa-trash"></i> {'Delete'|t}</a>
                             <a href="{'passport/set-status/0'|app}" data-ajax data-grp="#table tbody input.grp:checked"
                                data-confirm="你真的要禁用这些用户吗？" data-warn="请选择要禁用的用户" class="btn btn-sm btn-warning"><i
@@ -49,7 +48,7 @@
             </header>
             <section class="w-f">
                 <div class="table-responsive">
-                    <table id="table" data-auto data-table="{'passport/data'|app}" data-sort="PAS.id,d"
+                    <table id="table" data-auto data-table="{'passport/data'|app}" data-sort="PAS.login_time,d"
                            style="min-width: 1200px">
                         <thead>
                         <tr>
@@ -60,6 +59,8 @@
                             <th style="min-width: 120px" data-sort="PAS.username,a">账户</th>
                             <th width="200" data-sort="PAS.nickname,a">姓名</th>
                             <th width="120" data-sort="PAS.create_time,a">注册时间</th>
+                            <th width="120" data-sort="PAS.login_time,d">最后登录</th>
+                            <th width="80" data-sort="PAS.device,a">设备</th>
                             {'passport.table'|tablehead}
                             <th width="100" class="text-right">{'passport.table'|tableset}</th>
                         </tr>

@@ -9,7 +9,7 @@ $tables['1.0.0'][] = "CREATE TABLE IF NOT EXISTS `{prefix}passport` (
     `username` VARCHAR(32) NOT NULL COMMENT '用户名',
     `nickname` VARCHAR(64) NULL COMMENT '昵称',
     `phone` VARCHAR(20) NULL COMMENT '手机号',
-    `passwd` VARCHAR(32) NULL DEFAULT '' COMMENT '非第三方授权需要密码',
+    `passwd` VARCHAR(256) NULL DEFAULT '' COMMENT '非第三方授权需要密码',
     `avatar` VARCHAR(255) NULL COMMENT '头像',
     `gender` TINYINT(1) UNSIGNED NULL DEFAULT 0 COMMENT '性别,1男2女0未知',
     `status` TINYINT(4) UNSIGNED NULL DEFAULT 0 COMMENT '状态0未激活1正常2禁用',
@@ -17,6 +17,9 @@ $tables['1.0.0'][] = "CREATE TABLE IF NOT EXISTS `{prefix}passport` (
     `spm` VARCHAR(90) NULL COMMENT '推荐追踪(最大10级)',
     `rec_code` VARCHAR(8) NULL COMMENT '推荐码',
     `channel` VARCHAR(16) NULL COMMENT '来源渠道',
+    `ip` VARCHAR(64) NOT NULL COMMENT '注册IP地址',
+    `login_time` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '最后登录时间',
+    `device` VARCHAR(10) NULL COMMENT '最后登录设备',
     `remark` VARCHAR(255) NULL COMMENT '备注',
     PRIMARY KEY (`id`),
     UNIQUE INDEX `UDX_USERNAME` (`username` ASC),
@@ -24,7 +27,7 @@ $tables['1.0.0'][] = "CREATE TABLE IF NOT EXISTS `{prefix}passport` (
     INDEX `IDX_PHONE` (`phone` ASC),
     INDEX `IDX_CHANNEL` (`channel` ASC),
     INDEX `IDX_SPM` (`spm` ASC)
-)  ENGINE=INNODB DEFAULT CHARACTER SET={encoding} COMMENT='通行证'";
+)  ENGINE=INNODB AUTO_INCREMENT=500000 DEFAULT CHARACTER SET={encoding} COMMENT='通行证'";
 
 $tables['1.0.0'][] = "CREATE TABLE IF NOT EXISTS `{prefix}passport_meta` (
     `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -47,6 +50,7 @@ $tables['1.0.0'][] = "CREATE TABLE IF NOT EXISTS `{prefix}oauth` (
     `union_id` VARCHAR(96) NOT NULL COMMENT 'UNIONID',
     `device` VARCHAR(10) NOT NULL COMMENT '设备登录标识(pc,app)',
     `remark` VARCHAR(255) NULL,
+    `login_time` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '登录时间',
     PRIMARY KEY (`id`),
     INDEX `FK_PASSPORTID` USING BTREE (`passport_id` ASC),
     UNIQUE INDEX `UDX_TYPE_ID` (`type` ASC , `open_id` ASC)

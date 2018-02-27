@@ -60,8 +60,8 @@ class PassportForm extends FormTable {
 	 * @var \backend\form\PasswordField
 	 * @type string
 	 * @required
-	 * @minlength (8)
-	 * @passwd (3) => 必须由大、小写字母，符号，数字组成
+	 * @minlength (6)
+	 * @passwd (1) => 必须由字母，数字组成
 	 * @layout 4,col-xs-6
 	 */
 	public $password;
@@ -81,12 +81,13 @@ class PassportForm extends FormTable {
 	 */
 	public $channel;
 	/**
-	 * 激活
-	 * @var \backend\form\CheckboxField
-	 * @type bool
+	 * 推荐人(推荐码)
+	 * @var \backend\form\TextField
+	 * @type string
+	 * @callback (checkRec(id)) => 推荐码不可用
 	 * @layout 5,col-xs-6
 	 */
-	public $status = 1;
+	public $recom;
 
 	public function checkUsername($value, $data, $msg) {
 		$id                = unget($data, 'id');
@@ -123,6 +124,19 @@ class PassportForm extends FormTable {
 			$where['passport_id <>'] = $id;
 		}
 		if ($this->db()->select('id')->from('{oauth}')->exist($where)) {
+			return $msg;
+		}
+
+		return true;
+	}
+
+	public function checkRec($value, $data, $msg) {
+		$id                = unget($data, 'id');
+		$where['rec_code'] = $value;
+		if ($id) {
+			$where['id <>'] = $id;
+		}
+		if (!$this->exist($where)) {
 			return $msg;
 		}
 

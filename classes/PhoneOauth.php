@@ -10,8 +10,12 @@
 
 namespace passport\classes;
 
-interface IOauth {
-	public function check($data);
+class PhoneOauth implements IOauth {
+	public function check($data) {
+		return true;
+	}
 
-	public function getName();
+	public function getName() {
+		return '手机';
+	}
 }

@@ -7,8 +7,8 @@ use backend\form\BootstrapFormRender;
 use backend\form\Plupload;
 use passport\classes\form\PassportForm;
 use passport\classes\model\PassportTable;
+use system\classes\Syslog;
 use wulaphp\auth\Passport;
-use wulaphp\db\DatabaseConnection;
 use wulaphp\db\sql\Condition;
 use wulaphp\io\Ajax;
 use wulaphp\io\LocaleUploader;
@@ -64,7 +64,9 @@ class IndexController extends IFramePageController {
 				'passport_id' => $id,
 				'type'        => 'email'
 			])->get('open_id');
-
+			if ($user['parent']) {
+				$user['recom'] = PassportTable::toRecCode($user['parent']);
+			}
 			$form->inflateByData($user);
 			$form->removeRule('password', 'required');
 		}
@@ -97,10 +99,13 @@ class IndexController extends IFramePageController {
 				if ($avatar) {
 					$user['avatar'] = $avatar;
 				}
-				$rst = $form->newAccount($user);
+				$user['status'] = 1;
+				$rst            = $table->newAccount($user);
 			}
 			if (!$rst) {
 				return Ajax::error($table->lastError());
+			} else {
+				$id ? Syslog::info('更新通行证:' . $id, $this->passport->uid, 'passport') : Syslog::info('创建通行证:' . $user['username'], $this->passport->uid, 'passport');
 			}
 		} catch (ValidateException $ve) {
 			return Ajax::validate('PassportForm', $ve->getErrors());
@@ -129,6 +134,7 @@ class IndexController extends IFramePageController {
 				$table  = new PassportTable();
 				$avatar = $table->get(['id' => $uid])['avatar'];
 				$table->updateAccount(['avatar' => $url, 'id' => $uid]);
+				Syslog::info('更新头像:' . $uid, $this->passport->uid, 'passport');
 			} else {
 				$avatar                       = sess_get('uploaded_avatar1');
 				$_SESSION['uploaded_avatar1'] = $url;
@@ -148,6 +154,7 @@ class IndexController extends IFramePageController {
 			$table  = new PassportTable();
 			$avatar = $table->get(['id' => $uid])['avatar'];
 			$table->updateAccount(['avatar' => '', 'id' => $uid]);
+			Syslog::info('删除头像:' . $uid, $this->passport->uid, 'passport');
 		} else {
 			$avatar = sess_del('uploaded_avatar1');
 		}
@@ -171,39 +178,15 @@ class IndexController extends IFramePageController {
 		$ids = safe_ids2($ids);
 		if ($ids) {
 			if ($ids) {
-				$error = '';
-				$rst   = (new PassportTable())->db()->trans(function (DatabaseConnection $db) use ($ids) {
-					//删除用户
-					if (!$db->delete()->from('{passport}')->where(['id IN' => $ids])->exec()) {
-						return false;
-					}
-					//删除用户数据
-					if (!$db->delete()->from('{passport_meta}')->where(['passport_id IN' => $ids])->exec()) {
-						return false;
-					}
-					//删除授权属性
-					$sql = $db->delete()->from('{oauth_meta} AS OM');
-					$sql->left('{oauth} AS OA', 'OM.oauth_id', 'OA.id')->where(['OA.passport_id iN' => $ids]);
-					if (!$sql->exec()) {
-						return false;
-					}
-					//删除登录会话表
-					$sql1 = $db->delete()->from('{oauth_session} AS OM');
-					$sql1->left('{oauth} AS OA', 'OM.oauth_id', 'OA.id')->where(['OA.passport_id iN' => $ids]);
-					if (!$sql1->exec()) {
-						return false;
-					}
-					//删除授权表
-					if (!$db->delete()->from('{oauth}')->where(['passport_id IN' => $ids])->exec()) {
-						return false;
-					}
-
-					//通知第三方通行证删除啦.
-					return apply_filter('passport\onDelete', true, $ids);
-				}, $error);
+				$table = new PassportTable();
+				$rst   = $table->deleteAccount($ids);
 				if ($rst) {
+					Syslog::info('删除通行证:' . implode(',', $ids), $this->passport->uid, 'passport');
+
 					return Ajax::reload('#table', '所选用户已删除');
 				} else {
+					$error = $table->lastError();
+
 					return Ajax::error($error ? $error : '删除用户出错，请找系统管理员');
 				}
 			}
@@ -225,7 +208,9 @@ class IndexController extends IFramePageController {
 		if ($q) {
 			$qw = Condition::parseSearchExpression($q, [
 				'注册时间' => '@PAS.create_time',
-				'推荐人'  => 'PASR.rec_code',
+				'最后登录' => '@PAS.login_time',
+				'设备'   => 'PAS.device',
+				'推荐人'  => 'PAS.spm',
 				'推荐码'  => 'PAS.rec_code',
 				'手机'   => 'PAS.phone',
 				'邮箱'   => 'OAUTH.open_id',

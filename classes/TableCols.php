@@ -19,9 +19,17 @@ class TableCols {
 	 * @return mixed
 	 */
 	public static function get_columns_of_passport_table($cols) {
+		$cols['ip']       = ['name' => '注册IP', 'show' => false, 'width' => 120, 'order' => 10];
 		$cols['phone']    = ['name' => '手机', 'show' => true, 'width' => 120, 'order' => 20];
 		$cols['email']    = ['name' => '邮箱', 'show' => true, 'width' => 180, 'order' => 30];
-		$cols['spm']      = ['name' => '推荐人', 'show' => false, 'width' => 200, 'order' => 36];
+		$cols['spm']      = [
+			'name'   => '推荐人',
+			'show'   => false,
+			'order'  => 36,
+			'render' => function ($v) {
+				return rtrim($v, '/');
+			}
+		];
 		$cols['rec_code'] = ['name' => '推荐码', 'show' => true, 'width' => 120, 'order' => 38];
 		$cols['channel']  = ['name' => '渠道', 'show' => true, 'sort' => 'PAS.channel', 'width' => 120, 'order' => 40];
 		$cols['status']   = [

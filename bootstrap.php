@@ -44,12 +44,27 @@ class PassportModule extends CmfModule {
 		$passport = whoami('admin');
 		if ($passport->cando('m:system')) {
 			if ($passport->cando('m:system/passport')) {
-				$system               = $ui->getMenu('system');
-				$account              = $system->getMenu('passport');
-				$account->name        = _tt('Passport@passport');
-				$account->data['url'] = App::url('passport');
-				$account->pos         = 2;
-				$account->icon        = '&#xe630;';
+				$system     = $ui->getMenu('system');
+				$menu       = $system->getMenu('passport');
+				$menu->name = _tt('Passport@passport');
+				$menu->pos  = 2;
+				$menu->icon = '&#xe630;';
+
+				$pass              = $menu->getMenu('account', _tt('Passports@passprt'), 1);
+				$pass->data['url'] = App::url('passport');
+				$pass->icon        = '&#xe630;';
+
+				$oauth              = $menu->getMenu('oauth', _tt('Oauth Login@passport'), 2);
+				$oauth->data['url'] = App::url('passport/oauth');
+				$oauth->icon        = '&#xe681;';
+
+				$apps              = $menu->getMenu('apps', _tt('Oauth Apps@passport'), 3);
+				$apps->data['url'] = App::url('passport/app');
+				$apps->icon        = '&#xe642;';
+
+				$log              = $menu->getMenu('logs', _tt('Login Log@passport'), 4);
+				$log->data['url'] = App::url('passport/log');
+				$log->icon        = '&#xe64a;';
 			}
 		}
 	}
