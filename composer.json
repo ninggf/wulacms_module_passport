@@ -1,0 +1,9 @@
+{
+  "name": "wulacms/passport",
+  "description": "wulacms通行证模块",
+  "type": "wula-module",
+  "require": {
+	"wula/wula-installer": "^1.0",
+	"wulacms/backend": "*"
+  }
+}
