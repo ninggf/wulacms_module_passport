@@ -1,4 +1,4 @@
-<section class="hbox stretch wulaui" id="passport-page">
+<section class="hbox stretch wulaui layui-hide" id="passport-page">
     <section>
         <div class="vbox">
             <header class="bg-light header b-b clearfix">
@@ -114,5 +114,6 @@
 				return false;
 			}
 		});
+		$('#passport-page').removeClass('layui-hide');
 	});
 </script>

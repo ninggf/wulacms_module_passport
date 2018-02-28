@@ -62,7 +62,7 @@ class PassportModule extends CmfModule {
 				$apps->data['url'] = App::url('passport/apps');
 				$apps->icon        = '&#xe642;';
 
-				$log              = $menu->getMenu('logs', _tt('Login Log@passport'), 4);
+				$log              = $menu->getMenu('logs', _tt('Login Log@passport'), 900);
 				$log->data['url'] = App::url('passport/log');
 				$log->icon        = '&#xe64a;';
 			}
@@ -80,6 +80,18 @@ class PassportModule extends CmfModule {
 		$res = $manager->getResource('system/passport', _tt('Passport@passport'), 'm');
 		$res->addOperate('u', __('Edit'));
 		$res->addOperate('d', __('Delete'));
+	}
+
+	/**
+	 * @param array $logs
+	 *
+	 * @filter system\logs
+	 * @return array
+	 */
+	public static function syslog($logs) {
+		$logs['passport'] = '通行证日志';
+
+		return $logs;
 	}
 
 	protected function bind() {

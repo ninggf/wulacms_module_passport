@@ -51,6 +51,9 @@ class IndexController extends IFramePageController {
 					if ($tokens) {
 						fire('passport\onForceLogout', $tokens);
 					}
+					Syslog::info('禁用用户:' . implode(',', $ids), $this->passport->uid, 'passport');
+				} else {
+					Syslog::info('启用用户:' . implode(',', $ids), $this->passport->uid, 'passport');
 				}
 			}
 

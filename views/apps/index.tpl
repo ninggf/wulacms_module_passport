@@ -13,7 +13,6 @@
                 <th width="60"></th>
             </tr>
             </thead>
-            {include './data.tpl'}
         </table>
     </section>
 </div>

@@ -78,7 +78,7 @@ class AppsController extends IFramePageController {
 			Response::error('第三方登录' . $type . '不存在');
 		}
 		$table = new OauthApp();
-		$cfg   = $table->get($type)->get();
+		$cfg   = $table->exist(['type' => $type]);
 		if (!$cfg) {
 			Response::error('第三方登录' . $type . '不可用');
 		}
