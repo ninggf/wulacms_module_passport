@@ -77,3 +77,15 @@ $tables['1.0.0'][] = "CREATE TABLE IF NOT EXISTS `{prefix}oauth_session` (
     INDEX `IDX_CTIME` (`create_time` ASC),
     INDEX `IDX_EXPIRE` (`expiration` ASC)
 )  ENGINE=INNODB DEFAULT CHARACTER SET={encoding} COMMENT='授权用户登录表'";
+
+$tables['1.0.0'][] = "CREATE TABLE IF NOT EXISTS `{prefix}oauth_app` (
+    `type` VARCHAR(10) NOT NULL,
+    `status` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '启用',
+    `ios` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'IOS登录',
+    `android` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '安卓登录',
+    `web` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'WEB登录',
+    `options` TEXT NULL COMMENT '配置数据',
+    PRIMARY KEY (`type`)
+)  ENGINE=INNODB DEFAULT CHARACTER SET={encoding} COMMENT='第三方登录APP'";
+
+$tables['1.0.0'][] = "INSERT INTO `{prefix}oauth_app` VALUES ('phone', 1, 1, 1, 1, NULL), ('email', 1, 0, 0, 1, NULL), ('wechat', 0, 0, 0, 0, NULL),('qq', 0, 0, 0, 0, NULL),('weibo', 0, 0, 0, 0, NULL)";

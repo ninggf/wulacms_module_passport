@@ -59,7 +59,7 @@ class PassportModule extends CmfModule {
 				$oauth->icon        = '&#xe681;';
 
 				$apps              = $menu->getMenu('apps', _tt('Oauth Apps@passport'), 3);
-				$apps->data['url'] = App::url('passport/app');
+				$apps->data['url'] = App::url('passport/apps');
 				$apps->icon        = '&#xe642;';
 
 				$log              = $menu->getMenu('logs', _tt('Login Log@passport'), 4);

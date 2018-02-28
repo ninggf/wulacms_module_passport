@@ -21,9 +21,10 @@ use wulaphp\db\sql\Condition;
  * @acl     m:system/passport
  */
 class LogController extends IFramePageController {
-	public function index($oauth = '', $pid = '') {
+	public function index($oauth = '', $pid = '', $type = '') {
 		$data['oauth']  = $oauth;
 		$data['pid']    = $pid;
+		$data['type']   = $type;
 		$data['groups'] = OauthApp::getAppsName();
 
 		return $this->render($data);

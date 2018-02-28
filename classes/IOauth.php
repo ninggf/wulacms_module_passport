@@ -11,7 +11,25 @@
 namespace passport\classes;
 
 interface IOauth {
+	/**
+	 * @param array $data
+	 *
+	 * @return bool
+	 */
 	public function check($data);
 
+	/**
+	 * @return string
+	 */
 	public function getName();
+
+	/**
+	 * @return string
+	 */
+	public function getDesc();
+
+	/**
+	 * @return \wulaphp\form\FormTable
+	 */
+	public function getForm();
 }

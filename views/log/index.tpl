@@ -5,7 +5,7 @@
                 <div class="row m-t-sm">
                     <div class="col-xs-12 m-b-xs text-right">
                         <form id="search-form" class="form-inline" data-table-form="#table">
-                            <input type="hidden" name="type" id="type" value=""/>
+                            <input type="hidden" name="type" id="type" value="{$type}"/>
                             <input type="hidden" name="oid" value="{$oauth}"/>
                             <input type="text" data-expend="200" class="input-sm form-control" name="token"
                                    placeholder="TOKEN"/>
@@ -54,11 +54,11 @@
             </header>
             <section class="hidden-xs scrollable m-t-xs">
                 <ul class="nav nav-pills nav-stacked no-radius" id="app-list">
-                    <li class="active">
+                    <li class="{if !$type}active{/if}">
                         <a href="javascript:;"> 全部 </a>
                     </li>
                     {foreach $groups as $gp=>$name}
-                        <li>
+                        <li {if $type == $gp} class="active" {/if}>
                             <a href="javascript:;" rel="{$gp}" title="{$name}"> {$name}</a>
                         </li>
                     {/foreach}

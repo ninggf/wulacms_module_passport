@@ -15,6 +15,44 @@ use passport\classes\PhoneOauth;
 use wulaphp\db\Table;
 
 class OauthApp extends Table {
+	protected $autoIncrement = false;
+	protected $primaryKeys   = ['type'];
+
+	public function newApp($app) {
+		try {
+			return $this->insert($app);
+		} catch (\Exception $e) {
+			return false;
+		}
+	}
+
+	public function updateApp($app) {
+		return $this->update($app, ['type' => $app['type']]);
+	}
+
+	public function apps() {
+		$apps = self::getApps();
+		$data = [];
+		if ($apps) {
+			$ids  = array_keys($apps);
+			$sql  = $this->find(['type IN' => $ids]);
+			$list = $sql->toArray(null, 'type');
+
+			foreach ($apps as $id => $app) {
+				$list[ $id ]['id']      = $id;
+				$list[ $id ]['name']    = $app->getName();
+				$list[ $id ]['desc']    = $app->getDesc();
+				$list[ $id ]['hasForm'] = $app->getForm() ? true : false;
+				$data[]                 = $list[ $id ];
+			}
+		}
+
+		return $data;
+	}
+
+	/**
+	 * @return \passport\classes\IOauth[]
+	 */
 	public static function getApps() {
 		static $apps = false;
 		if ($apps === false) {
@@ -27,6 +65,9 @@ class OauthApp extends Table {
 		return $apps;
 	}
 
+	/**
+	 * @return string[]
+	 */
 	public static function getAppsName() {
 		$apps  = self::getApps();
 		$names = [];

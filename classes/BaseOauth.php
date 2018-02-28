@@ -10,16 +10,11 @@
 
 namespace passport\classes;
 
-class PhoneOauth extends BaseOauth {
-	public function check($data) {
-		return true;
-	}
-
-	public function getName() {
-		return '手机';
-	}
-
-	public function getDesc() {
-		return '手机号登录';
+abstract class BaseOauth implements IOauth {
+	/**
+	 * @return \wulaphp\form\FormTable
+	 */
+	public function getForm() {
+		return null;
 	}
 }

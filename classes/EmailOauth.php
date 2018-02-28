@@ -10,12 +10,16 @@
 
 namespace passport\classes;
 
-class EmailOauth implements IOauth {
+class EmailOauth extends BaseOauth {
 	public function check($data) {
 		return true;
 	}
 
 	public function getName() {
 		return '邮件';
+	}
+
+	public function getDesc() {
+		return '邮件登录';
 	}
 }
