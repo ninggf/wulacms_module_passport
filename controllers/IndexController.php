@@ -43,8 +43,15 @@ class IndexController extends IFramePageController {
 			$status = $status === '1' ? 1 : 0;
 
 			if ($ids) {
-				(new PassportTable())->db()->update('{passport}')->set(['status' => $status])->where(['id IN' => $ids])->exec();
+				$table = new PassportTable();
+				$table->db()->update('{passport}')->set(['status' => $status])->where(['id IN' => $ids])->exec();
 				fire('passport\onChangeStatus', $ids);
+				if (!$status) {
+					$tokens = $table->getToken($ids);
+					if ($tokens) {
+						fire('passport\onForceLogout', $tokens);
+					}
+				}
 			}
 
 			return Ajax::reload('#table', $status == '1' ? '所选用户已激活' : '所选用户已禁用');
@@ -182,6 +189,10 @@ class IndexController extends IFramePageController {
 				$rst   = $table->deleteAccount($ids);
 				if ($rst) {
 					Syslog::info('删除通行证:' . implode(',', $ids), $this->passport->uid, 'passport');
+					$tokens = $table->getToken($ids);
+					if ($tokens) {
+						fire('passport\onForceLogout', $tokens);
+					}
 
 					return Ajax::reload('#table', '所选用户已删除');
 				} else {

@@ -11,6 +11,7 @@
 namespace passport\classes\model;
 
 use wulaphp\db\DatabaseConnection;
+use wulaphp\db\sql\QueryBuilder;
 use wulaphp\db\Table;
 use wulaphp\io\Request;
 
@@ -211,6 +212,34 @@ class PassportTable extends Table {
 		} else {
 			return $recom . '/';
 		}
+	}
+
+	/**
+	 * 获取用户登录token.
+	 *
+	 * @param string|array       $ids  通行证编号
+	 * @param string             $type 登录类型
+	 * @param DatabaseConnection $db   数据库连接.
+	 *
+	 * @return array
+	 */
+	public function getToken($ids, $type = '', $db = null) {
+		if (!$db) {
+			$db = $this->dbconnection;
+		}
+		if (!is_array($ids)) {
+			$ids = [$ids];
+		}
+		$where['passport_id IN'] = $ids;
+		if ($type) {
+			$where['type'] = $type;
+		}
+		$sql = $db->select('token');
+		$sql->from('{oauth} AS OA');
+		$sql->join('{oauth_session} AS OS', 'OA.id = OS.oauth_id AND OA.login_time = OS.create_time AND OA.device = OS.device', QueryBuilder::INNER);
+		$sql->where($where);
+
+		return $sql->toArray('token');
 	}
 
 	/**

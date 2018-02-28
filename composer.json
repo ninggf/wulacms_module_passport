@@ -3,7 +3,17 @@
   "description": "wulacms通行证模块",
   "type": "wula-module",
   "require": {
-	"wula/wula-installer": "^1.0",
-	"wulacms/backend": "*"
-  }
+	"wula/wula-installer": "^1.0"
+  },
+  "license": "MIT",
+  "authors": [
+	{
+	  "name": "Leo Ning",
+	  "email": "windywany@gmail.com"
+	}
+  ],
+  "support": {
+	"issues": "https://github.com/ninggf/wulacms_module_passport/issues"
+  },
+  "homepage": "https://www.wulacms.com/modules/passport"
 }

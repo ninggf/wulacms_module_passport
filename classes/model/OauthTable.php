@@ -22,7 +22,7 @@ class OauthTable extends Table {
 			if (!$rst) {
 				return false;
 			}
-			fire('passport\onForceLogout', $token);
+			fire('passport\onForceLogout', [$token]);
 
 			return true;
 		} catch (\Exception $e) {
