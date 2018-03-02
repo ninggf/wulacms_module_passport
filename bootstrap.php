@@ -50,7 +50,7 @@ class PassportModule extends CmfModule {
 				$menu->pos  = 2;
 				$menu->icon = '&#xe630;';
 
-				$pass              = $menu->getMenu('account', _tt('Passports@passprt'), 1);
+				$pass              = $menu->getMenu('account', _tt('Passports@passport'), 1);
 				$pass->data['url'] = App::url('passport');
 				$pass->icon        = '&#xe630;';
 
