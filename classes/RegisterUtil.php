@@ -27,7 +27,7 @@ class RegisterUtil {
 		}
 		$blackips = App::cfg('blackips@passport');
 		if (empty($blackips)) {
-			return false;
+			return true;
 		}
 		$ips = explode("\n", $blackips);
 
