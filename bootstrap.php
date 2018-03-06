@@ -2,6 +2,7 @@
 
 namespace passport;
 
+use passport\classes\PassportSetting;
 use wula\cms\CmfModule;
 use wulaphp\app\App;
 
@@ -92,6 +93,30 @@ class PassportModule extends CmfModule {
 		$logs['passport'] = '通行证日志';
 
 		return $logs;
+	}
+
+	/**
+	 * @param $settings
+	 *
+	 * @filter backend/settings
+	 * @return array
+	 */
+	public static function setting($settings) {
+		$settings['passport'] = new PassportSetting();
+
+		return $settings;
+	}
+
+	/**
+	 * @param $status
+	 *
+	 * @return mixed
+	 * @filter rest\onGetClientStatus
+	 */
+	public static function clientStatus($status) {
+		$status['neeRecCode'] = App::bcfg('need_rec@passport');
+
+		return $status;
 	}
 
 	protected function bind() {

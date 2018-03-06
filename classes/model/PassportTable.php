@@ -77,8 +77,10 @@ class PassportTable extends Table {
 				$data['parent'] = self::toId($recom);
 				$data['spm']    = $this->getSpm($recom, $db);
 			}
-			$data['ip'] = Request::getIp();
-			$id         = $this->insert($data);
+			if (!isset($data['ip'])) {
+				$data['ip'] = Request::getIp();
+			}
+			$id = $this->insert($data);
 			if ($id) {
 				if (isset($email) && !$this->updateOauth($id, 'email', $email, $email, $db)) {
 					return false;
