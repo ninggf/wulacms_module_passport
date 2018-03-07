@@ -27,6 +27,24 @@ class SettingForm extends FormTable {
 	 */
 	public $need_bind = 0;
 	/**
+	 * 验证码登录
+	 * @var \backend\form\CheckboxField
+	 * @type bool
+	 */
+	public $code_login = 0;
+	/**
+	 * 允许修改用户资料
+	 * @var \backend\form\CheckboxField
+	 * @type bool
+	 */
+	public $allow_update = 1;
+	/**
+	 * 允许客户端重新加载用户信息
+	 * @var \backend\form\CheckboxField
+	 * @type bool
+	 */
+	public $force_reload = 0;
+	/**
 	 * 必须邀请才能注册
 	 * @var \backend\form\CheckboxField
 	 * @type bool
@@ -57,6 +75,25 @@ class SettingForm extends FormTable {
 	 * @note   间隔，单位秒
 	 */
 	public $interval = 60;
+	/**
+	 * 登录过期时间(单位天)
+	 * @var \backend\form\TextField
+	 * @type int
+	 * @digits
+	 * @layout 45,col-xs-6
+	 * @note   0表示久不过期
+	 */
+	public $expire = 0;
+	/**
+	 *
+	 * @var \backend\form\TextField
+	 * @type int
+	 * @digits
+	 * @range (0,15)
+	 * @layout 45,col-xs-6
+	 * @note   登录TOKEN存储在redis的哪个库
+	 */
+	public $redisdb = 10;
 	/**
 	 * 黑名单(一行一个IP)
 	 * @var \backend\form\TextareaField

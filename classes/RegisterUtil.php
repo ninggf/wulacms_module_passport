@@ -101,27 +101,7 @@ class RegisterUtil {
 		return false;
 	}
 
-	/**
-	 * 客户端是否有效.
-	 *
-	 * @param string $cid
-	 *
-	 * @return bool
-	 */
-	public static function checkClient($cid) {
-		if (empty($cid)) {
-			return false;
-		}
-		try {
-			$db = App::db();
 
-			return $db->select('id')->from('{app_client}')->where(['id' => $cid])->exist('id');
-		} catch (\Exception $e) {
-
-		}
-
-		return false;
-	}
 
 	/**
 	 * 手机是否有效.

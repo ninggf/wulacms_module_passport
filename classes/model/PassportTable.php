@@ -58,7 +58,7 @@ class PassportTable extends Table {
 	}
 
 	/**
-	 * 新用户.
+	 * 新用户（添加第三方登录信息）
 	 *
 	 * @param array $data
 	 *
@@ -93,12 +93,44 @@ class PassportTable extends Table {
 				if (!$this->update($up, $id)) {
 					return false;
 				}
+				fire('passport\onPassportCreated', $id);
 			}
 
 			return $id;
 		}, $this->errors);
 
 		return $rst;
+	}
+
+	/**
+	 * 仅添加passport数据。
+	 *
+	 * @param array $data
+	 *
+	 * @return bool|int
+	 */
+	public function addPassport($data) {
+		$data['update_time'] = $data['create_time'] = time();
+		if (isset($data['recom'])) {
+			$recom = $data['recom'];
+			unset($data['recom']);
+			$data['parent'] = self::toId($recom);
+			$data['spm']    = $this->getSpm($recom, $this->db());
+		}
+		if (!isset($data['ip'])) {
+			$data['ip'] = Request::getIp();
+		}
+		$id = $this->insert($data);
+		if ($id) {
+			//生成推荐码
+			$up['rec_code'] = base_convert($id, 10, 36);
+			if (!$this->update($up, $id)) {
+				return false;
+			}
+			fire('passport\onPassportCreated', $id);
+		}
+
+		return $id;
 	}
 
 	/**

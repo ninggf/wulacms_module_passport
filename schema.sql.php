@@ -89,3 +89,9 @@ $tables['1.0.0'][] = "CREATE TABLE IF NOT EXISTS `{prefix}oauth_app` (
 )  ENGINE=INNODB DEFAULT CHARACTER SET={encoding} COMMENT='第三方登录APP'";
 
 $tables['1.0.0'][] = "INSERT INTO `{prefix}oauth_app` VALUES ('phone', 1, 1, 1, 1, NULL), ('email', 1, 0, 0, 1, NULL), ('wechat', 0, 0, 0, 0, NULL),('qq', 0, 0, 0, 0, NULL),('weibo', 0, 0, 0, 0, NULL)";
+
+$tables['1.1.0'][] = "ALTER TABLE `{prefix}passport_meta` ADD UNIQUE INDEX `UDX_ID_NAME` (`passport_id` ASC, `name` ASC)";
+
+$tables['1.1.0'][] = "ALTER TABLE `{prefix}oauth_meta` ADD UNIQUE INDEX `UDX_ID_NAME` (`oauth_id` ASC, `name` ASC)";
+
+$tables['1.1.0'][] = "ALTER TABLE `{prefix}oauth_session` ADD INDEX `IDX_TOKEN` (`token` ASC)";

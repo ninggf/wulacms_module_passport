@@ -2,6 +2,7 @@
 
 namespace passport;
 
+use passport\api\v1\AccountApi;
 use passport\classes\PassportSetting;
 use wula\cms\CmfModule;
 use wulaphp\app\App;
@@ -30,6 +31,7 @@ class PassportModule extends CmfModule {
 
 	public function getVersionList() {
 		$v['1.0.0'] = '初始化模块';
+		$v['1.1.0'] = '优化数据库,添加索引';
 
 		return $v;
 	}
@@ -114,9 +116,27 @@ class PassportModule extends CmfModule {
 	 * @filter rest\onGetClientStatus
 	 */
 	public static function clientStatus($status) {
+		//需要推荐码
 		$status['neeRecCode'] = App::bcfg('need_rec@passport');
+		//可以验证码登录
+		$status['codeLogin'] = App::bcfg('code_login@passport');
+		//允许修改用户信息
+		$status['updataMeta'] = App::bcfg('allow_update@passport', true);
+		//允许注册
+		$status['allowReg'] = App::bcfg('enabled@passport', true);
 
 		return $status;
+	}
+
+	/**
+	 * 强制退出。
+	 *
+	 * @param array $tokens
+	 *
+	 * @bind passport\onForceLogout
+	 */
+	public static function forceLogout($tokens) {
+		AccountApi::forceLogout($tokens);
 	}
 
 	protected function bind() {

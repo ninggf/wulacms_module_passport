@@ -115,7 +115,11 @@ class IndexController extends IFramePageController {
 			if (!$rst) {
 				return Ajax::error($table->lastError());
 			} else {
-				$id ? Syslog::info('更新通行证:' . $id, $this->passport->uid, 'passport') : Syslog::info('创建通行证:' . $user['username'], $this->passport->uid, 'passport');
+				if ($id) {
+					Syslog::info('更新通行证:' . $id, $this->passport->uid, 'passport');
+				} else {
+					Syslog::info('创建通行证:' . $user['username'], $this->passport->uid, 'passport');
+				}
 			}
 		} catch (ValidateException $ve) {
 			return Ajax::validate('PassportForm', $ve->getErrors());

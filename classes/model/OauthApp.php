@@ -11,6 +11,10 @@
 namespace passport\classes\model;
 
 use passport\classes\EmailOauth;
+use passport\classes\oauth\QqOauth;
+use passport\classes\oauth\WebQqOauth;
+use passport\classes\oauth\WebWechatOauth;
+use passport\classes\oauth\WechatOauth;
 use passport\classes\PhoneOauth;
 use wulaphp\db\Table;
 
@@ -57,8 +61,12 @@ class OauthApp extends Table {
 		static $apps = false;
 		if ($apps === false) {
 			$apps = apply_filter('passport\getOauthApps', [
-				'phone' => new PhoneOauth(),
-				'email' => new EmailOauth()
+				'phone'     => new PhoneOauth(),
+				'email'     => new EmailOauth(),
+				'qq'        => new QqOauth(),
+				'wechat'    => new WechatOauth(),
+				'webqq'     => new WebQqOauth(),
+				'webwechat' => new WebWechatOauth()
 			]);
 		}
 
