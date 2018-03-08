@@ -385,6 +385,13 @@ class AccountApi extends API {
 	 * @return array {
 	 *      "status":1
 	 * }
+	 *
+	 * @error   403=>TOKEN为空
+	 * @error   404=>要更新的属性为空
+	 * @error   405=>昵称不可用
+	 * @error   406=>更新用户信息失败
+	 * @error   500=>内部错误
+	 *
 	 * @throws
 	 */
 	public function update($token, $meta) {
@@ -431,7 +438,7 @@ class AccountApi extends API {
 					}
 				}
 				if ($pa && !$dbx->update('{passport}')->set($pa)->where(['id' => $info['uid']])->exec()) {
-					throw_exception('800@更新用户信息失败');
+					throw_exception('406@更新用户信息失败');
 				}
 
 				return true;
