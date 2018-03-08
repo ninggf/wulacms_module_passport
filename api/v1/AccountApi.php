@@ -34,7 +34,7 @@ class AccountApi extends API {
 	/**
 	 * 使用手机注册通行证
 	 *
-	 * @apiName 手机注册
+	 * @apiName       手机注册
 	 * @session
 	 *
 	 * @param string $phone    (required) 手机号
@@ -45,19 +45,20 @@ class AccountApi extends API {
 	 * @param string $password 密码
 	 * @param string $recCode  (sample=defx) 推荐码
 	 *
-	 * @paramo  int uid 用户ID
+	 * @paramo        int uid 用户ID
 	 *
-	 * @error   302=>手机号已经存在
-	 * @error   400=>未知设备
-	 * @error   401=>验证码不正确
-	 * @error   402=>不允许注册
-	 * @error   403=>注册关闭
-	 * @error   404=>非法终端
-	 * @error   800=>请填写推荐码
-	 * @error   801=>推荐码不可用
-	 * @error   406=>注册过快
-	 * @error   407=>手机号码不正确
-	 * @error   500=>内部错误
+	 * @error         302=>手机号已经存在
+	 * @error         400=>未知设备
+	 * @error         401=>验证码不正确
+	 * @error         402=>不允许注册
+	 * @error         403=>注册关闭
+	 * @error         404=>非法终端
+	 * @error         405=>未开启SESSION
+	 * @error         800=>请填写推荐码
+	 * @error         801=>推荐码不可用
+	 * @error         406=>注册过快
+	 * @error         407=>手机号码不正确
+	 * @error         500=>内部错误
 	 *
 	 * @return array {
 	 *  "uid":10000
@@ -65,6 +66,9 @@ class AccountApi extends API {
 	 * @throws
 	 */
 	public function register($phone, $code, $channel = '', $device = '', $cid = '', $password = '', $recCode = '') {
+		if (!$this->sessionId) {
+			$this->error(405, '未开启SESSION');
+		}
 		if (!isset(ClientApi::device[ $device ])) {
 			$this->error(400, '未知设备');
 		}
@@ -142,11 +146,15 @@ class AccountApi extends API {
 	 * @error   400=>密码为空
 	 * @error   401=>验证码不正确
 	 * @error   407=>手机号码格式不对
+	 * @error   405=>未开启SESSION
 	 * @error   500=>内部错误
 	 *
 	 * @throws
 	 */
 	public function resetPasswd($phone, $code, $password) {
+		if (!$this->sessionId) {
+			$this->error(405, '未开启SESSION');
+		}
 		if (!preg_match('/^1[3456789]\d{9}$/', $phone)) {
 			$this->error(407, '手机号码格式不对');
 		}
@@ -176,6 +184,7 @@ class AccountApi extends API {
 	 * 2. 2.验证码登录，需要通过短信接口发送模板为`login_code`的短信以获取验证码.
 	 *
 	 * @apiName 登录
+	 * @session
 	 *
 	 * @param string $phone    (required,sample=18049920019) 手机号
 	 * @param string $device   (required,sample=ios,android,wxapp,wxgame,h5,pc,web) 设备
@@ -214,6 +223,7 @@ class AccountApi extends API {
 	 * @error   403=>手机或密码不正确
 	 * @error   405=>密码或验证码为空
 	 * @error   500=>内部错误
+	 * @error   503=>未开启SESSION
 	 *
 	 * @throws
 	 */
@@ -225,6 +235,9 @@ class AccountApi extends API {
 			$this->error(407, '手机号码格式不对');
 		}
 		if ($code) {//验证码登录
+			if (!$this->sessionId) {
+				$this->error(503, '未开启SESSION');
+			}
 			if (!LoginTemplate::validate($code)) {
 				$this->error(408, '验证码不正确');
 			}

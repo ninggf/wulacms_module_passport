@@ -234,13 +234,13 @@ class OauthApi extends API {
 	 *
 	 * @apiName 绑定
 	 *
-	 * @param string  $token   (required) TOKEN
-	 * @param string  $type    (required) 第三方类型
-	 * @param string  $openid  (required) OPEN ID
-	 * @param string  $device  (required) 设备
-	 * @param  string $cid     (required) 终端编号
-	 * @param string  $unionid UNION ID
-	 * @param object  $meta    (sample={"avatar":"...","gender":"","nickname":""}) 第三方提供的额外数据
+	 * @param string $token   (required) TOKEN
+	 * @param string $type    (required) 第三方类型
+	 * @param string $openid  (required) OPEN ID
+	 * @param string $device  (required) 设备
+	 * @param string $cid     (required) 终端编号
+	 * @param string $unionid UNION ID
+	 * @param object $meta    (sample={"avatar":"...","gender":"","nickname":""}) 第三方提供的额外数据
 	 *
 	 * @paramo  int status 绑定成功始终为1
 	 *
