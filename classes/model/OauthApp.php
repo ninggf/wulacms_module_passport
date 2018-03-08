@@ -39,15 +39,17 @@ class OauthApp extends Table {
 		$data = [];
 		if ($apps) {
 			$ids  = array_keys($apps);
-			$sql  = $this->find(['type IN' => $ids]);
+			$sql  = $this->find(['type IN' => $ids], 'type,status,ios,android,web');
 			$list = $sql->toArray(null, 'type');
 
 			foreach ($apps as $id => $app) {
 				$list[ $id ]['id']      = $id;
+				$list[ $id ]['type']    = $id;
 				$list[ $id ]['name']    = $app->getName();
 				$list[ $id ]['desc']    = $app->getDesc();
 				$list[ $id ]['hasForm'] = $app->getForm() ? true : false;
-				$data[]                 = $list[ $id ];
+				$list[ $id ]['oauth']   = $app;
+				$data[ $id ]            = $list[ $id ];
 			}
 		}
 

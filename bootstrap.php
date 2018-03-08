@@ -3,6 +3,7 @@
 namespace passport;
 
 use passport\api\v1\AccountApi;
+use passport\classes\model\OauthApp;
 use passport\classes\PassportSetting;
 use wula\cms\CmfModule;
 use wulaphp\app\App;
@@ -110,12 +111,13 @@ class PassportModule extends CmfModule {
 	}
 
 	/**
-	 * @param $status
+	 * @param array  $status
+	 * @param string $device
 	 *
-	 * @return mixed
+	 * @return array
 	 * @filter rest\onGetClientStatus
 	 */
-	public static function clientStatus($status) {
+	public static function clientStatus($status, $device) {
 		//需要推荐码
 		$status['neeRecCode'] = App::bcfg('need_rec@passport');
 		//可以验证码登录
@@ -124,6 +126,25 @@ class PassportModule extends CmfModule {
 		$status['updataMeta'] = App::bcfg('allow_update@passport', true);
 		//允许注册
 		$status['allowReg'] = App::bcfg('enabled@passport', true);
+		if ($device) {
+			$appTable = new OauthApp();
+			$apps     = $appTable->apps();
+			$qq       = $apps['qq'];
+			$wechat   = $apps['wechat'];
+			$phone    = $apps['phone'];
+			$oauth    = [];
+			if ($qq['status'] && $qq[ $device ]) {
+				$oauth[] = 'qq';
+			}
+			if ($wechat['status'] && $wechat[ $device ]) {
+				$oauth[] = 'wechat';
+			}
+			if ($phone['status'] && $phone[ $device ]) {
+				$oauth[] = 'phone';
+			}
+			//允许的第三方登录
+			$status['oauth'] = $oauth;
+		}
 
 		return $status;
 	}

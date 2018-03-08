@@ -77,10 +77,7 @@ class OauthApi extends API {
 	 * @throws
 	 */
 	public function login($type, $openid, $device, $cid, $unionid = '', $recCode = '', $channel = '', $meta = null) {
-		$apps = OauthApp::getApps();
-		if (!isset($apps[ $type ])) {
-			$this->error(600, '不支持的第三方登录');
-		}
+
 		if (empty($openid)) {
 			$this->error(601, 'OPENID为空');
 		}
@@ -102,9 +99,19 @@ class OauthApi extends API {
 		if (!RegisterUtil::limit($ip)) {
 			$this->error(406, '注册过快');
 		}
+		$appTable = new OauthApp();
+		$apps     = $appTable->apps();
+		if (!isset($apps[ $type ])) {
+			$this->error(600, '不支持的第三方登录');
+		}
 		$oauthApp = $apps[ $type ];
+		if (!$oauthApp['status'] || !$oauthApp[ $device ]) {
+			$this->error(603, '第三方登录已停用');
+		}
 		//第三方登录校验
-		$checked = $oauthApp->check([
+		/**@var \passport\classes\IOauth $oapp */
+		$oapp    = $oauthApp['oauth'];
+		$checked = $oapp->check([
 			'openid'  => $openid,
 			'unionid' => $unionid,
 			'meta'    => $meta
