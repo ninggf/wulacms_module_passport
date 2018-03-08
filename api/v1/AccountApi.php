@@ -413,7 +413,7 @@ class AccountApi extends API {
 					} else if ($key == 'nickname') {
 						$pa['nickname'] = apply_filter('passport\onSetNickname', $value);
 						if (!isset($pa['nickname'])) {
-							throw_exception('昵称不可用');
+							throw_exception('405@昵称不可用');
 						}
 						$info['nickname'] = $value;
 					} else if ($key == 'avatar') {
@@ -431,14 +431,14 @@ class AccountApi extends API {
 					}
 				}
 				if ($pa && !$dbx->update('{passport}')->set($pa)->where(['id' => $info['uid']])->exec()) {
-					throw_exception('更新用户信息失败');
+					throw_exception('800@更新用户信息失败');
 				}
 
 				return true;
 			}, $error);
 
 			if (!$rst) {
-				$this->error(405, $error ? $error : '更新用户属性错误');
+				$this->error($error);
 			}
 			$expire = App::icfg('expire@passport', 315360000);
 			$redis  = RedisClient::getRedis(App::icfg('redisdb@passport', 10));
