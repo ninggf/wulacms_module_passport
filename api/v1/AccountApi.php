@@ -548,11 +548,11 @@ class AccountApi extends API {
 					$info = array_merge($meta, $info);
 				}
 				$expire = App::icfg('expire@passport', 315360000);
-				$info   = json_encode($info);
+				$infox  = json_encode($info);
 				if ($expire) {
-					$rtn = $redis->setex($token, $expire, $info);
+					$rtn = $redis->setex($token, $expire, $infox);
 				} else {
-					$rtn = $redis->set($token, $info);
+					$rtn = $redis->set($token, $infox);
 				}
 				if (!$rtn) {
 					$redis->del($token);
