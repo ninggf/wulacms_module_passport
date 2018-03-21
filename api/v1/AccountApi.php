@@ -615,8 +615,11 @@ class AccountApi extends API {
 	 * @return string
 	 */
 	public static function createSession($oauthId, $device, $passport) {
-		$token                  = md5(uniqid() . $device . $passport['id']);
-		$expire                 = App::icfg('expire@passport', 315360000);
+		$token  = md5(uniqid() . $device . $passport['id']);
+		$expire = App::icfg('expire@passport', 315360000);
+		if ($expire <= 0) {
+			$expire = 315360000;
+		}
 		$session['ip']          = Request::getIp();
 		$session['create_time'] = time();
 		$session['expiration']  = $session['create_time'] + $expire;
