@@ -240,6 +240,7 @@ class OauthApi extends API {
 	 * @param string $device  (required) 设备
 	 * @param string $cid     (required) 终端编号
 	 * @param string $unionid UNION ID
+	 * @param int    $force   是否强制绑定
 	 * @param object $meta    (sample={"avatar":"...","gender":"","nickname":""}) 第三方提供的额外数据
 	 *
 	 * @paramo  int status 绑定成功始终为1
@@ -256,10 +257,11 @@ class OauthApi extends API {
 	 * @error   600=>不支持的第三方登录
 	 * @error   601=>OPENID为空
 	 * @error   602=>已经登录为其它用户
+	 * @error   900=>绑定失败
 	 *
 	 * @throws
 	 */
-	public function bind($token, $type, $openid, $device, $cid, $unionid, $meta) {
+	public function bind($token, $type, $openid, $device, $cid, $unionid, $force = 0, $meta = null) {
 		if (empty($token)) {
 			$this->error(403, 'TOKEN为空');
 		}
@@ -294,12 +296,22 @@ class OauthApi extends API {
 		}
 		$meta = is_array($meta) ? $meta : [];
 		$db   = App::db();
-		$rst  = $db->trans(function (DatabaseConnection $dbx) use ($type, $openid, $unionid, $device, $info, $meta) {
-			$oauth = $dbx->select()->from('{oauth}')->where([
+		$rst  = $db->trans(function (DatabaseConnection $dbx) use ($type, $openid, $unionid, $device, $info, $meta, $force) {
+			$oauth = $dbx->select('passport_id,id')->from('{oauth}')->where([
 				'type'    => $type,
 				'open_id' => $openid
 			])->get();
 			if ($oauth) {
+				if ($force) {
+					//修改oauth表的passport_id。
+					$rst = $dbx->update('{oauth}')->set(['passport_id' => $info['uid']])->where(['id' => $oauth['id']])->exec();
+					if ($rst) {
+						fire('passport\bindTo', $oauth['passport_id'], $info['uid']);
+
+						return true;
+					}
+					throw_exception('900@绑定失败');
+				}
 				throw_exception('602@已经登录为其它用户');
 			}
 			$data['type']        = $type;

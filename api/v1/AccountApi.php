@@ -309,12 +309,14 @@ class AccountApi extends API {
 	 * @param string $device   (required) 设备
 	 * @param string $cid      (required) 终端ID
 	 * @param string $password 密码，绑定时设置的登录密码
+	 * @param int    $force    强制绑定，将清空原账户数据
 	 *
 	 * @paramo  int status 绑定结果,1绑定成功
 	 *
 	 * @return array {
 	 *  "status":1
 	 * }
+	 *
 	 * @error   403=>TOKEN为空
 	 * @error   402=>未知设备
 	 * @error   407=>手机号码格式不对
@@ -322,10 +324,11 @@ class AccountApi extends API {
 	 * @error   401=>未知终端
 	 * @error   405=>手机号已经存在
 	 * @error   500=>内部错误
+	 * @error   900=>绑定失败
 	 *
 	 * @throws
 	 */
-	public function bind($token, $phone, $code, $device, $cid = '', $password = '') {
+	public function bind($token, $phone, $code, $device, $cid = '', $password = '', $force = 0) {
 		if (!$token) {
 			$this->error(403, 'TOKEN为空');
 		}
@@ -347,12 +350,31 @@ class AccountApi extends API {
 		}
 		try {
 			$db  = App::db();
-			$rst = $db->trans(function (DatabaseConnection $dbx) use ($phone, $info, $device, $password) {
-				$passport = $dbx->select('OA.id')->from('{oauth} AS OA')->where([
+			$rst = $db->trans(function (DatabaseConnection $dbx) use ($phone, $info, $device, $password, $force) {
+				$passport = $dbx->select('OA.id,OA.passport_id')->from('{oauth} AS OA')->where([
 					'type'    => 'phone',
 					'open_id' => $phone
 				])->get();
 				if ($passport) {
+					if ($force) {
+						//修改oauth的passport_id；
+						$rst = $dbx->update('{oauth}')->set(['passport_id' => $info['uid']])->where(['id' => $passport['id']])->exec();
+						//更新原passport表中手机对应的phone为空。
+						if ($rst) {
+							$rst = $dbx->update('{passport}')->set(['phone' => ''])->where(['id' => $passport['passport_id']])->exec();
+						}
+						//更新当前用户的手机号
+						if ($rst) {
+							$dbx->update('{passport}')->set(['phone' => $phone])->where(['id' => $info['uid']])->exec();
+						}
+						if ($rst) {
+							//通知业务合并账户
+							fire('passport\bindTo', $passport['passport_id'], $info['uid']);
+
+							return true;
+						}
+						throw_exception('900@绑定失败');
+					}
 					throw_exception('405@手机已经存在');
 				}
 				$data['type']        = 'phone';
