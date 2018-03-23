@@ -225,7 +225,10 @@ class OauthApi extends API {
 		}
 		$account = new AccountApi($this->appKey, $this->ver);
 		$info    = $account->info($token);
-
+		if($type=='wechat'){
+			//新手任务 绑定微信
+			fire('ucenter\onGetTaskDone', $info['uid'], 'bind_wx');
+		}
 		return $info;
 	}
 
@@ -341,7 +344,10 @@ class OauthApi extends API {
 		if (!$rst) {
 			$this->error($errors);
 		}
-
+		if($type=='wechat'){
+			//新手任务 绑定微信
+			fire('ucenter\onGetTaskDone', $info['uid'], 'bind_wx');
+		}
 		return ['status' => 1];
 	}
 

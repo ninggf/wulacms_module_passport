@@ -124,7 +124,8 @@ class AccountApi extends API {
 		if (!$id) {
 			$this->error(500, '内部错误');
 		}
-
+		//新手任务 绑定手机号
+		fire('ucenter\onGetTaskDone', $id, 'bind_phone');
 		return ['uid' => $id];
 	}
 
@@ -392,7 +393,8 @@ class AccountApi extends API {
 					$pa['passwd'] = Passport::passwd($password);
 				}
 				$pa['update_time'] = $data['update_time'];
-
+				//新手任务 绑定手机号
+				fire('ucenter\onGetTaskDone', $info['uid'], 'bind_phone');
 				return $dbx->update('{passport}')->set($pa)->where(['id' => $info['uid']])->exec();
 			}, $error);
 			if (!$rst) {
@@ -498,7 +500,8 @@ class AccountApi extends API {
 		} catch (\Exception $e) {
 			$this->error(500, '内部错误');
 		}
-
+		//新手任务 完善个人资料
+		fire('ucenter\onGetTaskDone', $info['uid'], 'self_info');
 		return ['status' => 1];
 	}
 

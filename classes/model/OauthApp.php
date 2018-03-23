@@ -12,6 +12,7 @@ namespace passport\classes\model;
 
 use passport\classes\EmailOauth;
 use passport\classes\oauth\QqOauth;
+use passport\classes\oauth\SimpleOauth;
 use passport\classes\oauth\WebQqOauth;
 use passport\classes\oauth\WebWechatOauth;
 use passport\classes\oauth\WechatOauth;
@@ -68,7 +69,8 @@ class OauthApp extends Table {
 				'qq'        => new QqOauth(),
 				'wechat'    => new WechatOauth(),
 				'webqq'     => new WebQqOauth(),
-				'webwechat' => new WebWechatOauth()
+				'webwechat' => new WebWechatOauth(),
+			    'simple' => new SimpleOauth()
 			]);
 		}
 
