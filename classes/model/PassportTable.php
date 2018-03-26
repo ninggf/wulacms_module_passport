@@ -94,6 +94,10 @@ class PassportTable extends Table {
 					return false;
 				}
 				fire('passport\onPassportCreated', $id);
+				//师傅信息写入统计表
+				if($data['parent']){
+					fire('ucenter\onGetInvite',$id,$data['parent']);
+				}
 			}
 
 			return $id;
