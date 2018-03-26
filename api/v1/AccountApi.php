@@ -126,6 +126,8 @@ class AccountApi extends API {
 		}
 		//新手任务 绑定手机号
 		fire('ucenter\onGetTaskDone', $id, 'bind_phone');
+		//注册赠送豆子钻石
+		fire('ucenter\onGetRegister', $id);
 
 		return ['uid' => $id];
 	}
