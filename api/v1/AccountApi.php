@@ -126,6 +126,7 @@ class AccountApi extends API {
 		}
 		//新手任务 绑定手机号
 		fire('ucenter\onGetTaskDone', $id, 'bind_phone');
+
 		return ['uid' => $id];
 	}
 
@@ -395,6 +396,7 @@ class AccountApi extends API {
 				$pa['update_time'] = $data['update_time'];
 				//新手任务 绑定手机号
 				fire('ucenter\onGetTaskDone', $info['uid'], 'bind_phone');
+
 				return $dbx->update('{passport}')->set($pa)->where(['id' => $info['uid']])->exec();
 			}, $error);
 			if (!$rst) {
@@ -502,6 +504,65 @@ class AccountApi extends API {
 		}
 		//新手任务 完善个人资料
 		fire('ucenter\onGetTaskDone', $info['uid'], 'self_info');
+
+		return ['status' => 1];
+	}
+
+	/**
+	 * 请客户端保存用户两次输入的密码相同，服务器端不校验。
+	 *
+	 * @apiName 修改密码
+	 *
+	 * @param string $token  (required) TOKEN 登录TOKEN
+	 * @param string $oldpwd (required) 原密码
+	 * @param string $newpwd (required) 新密码
+	 *
+	 * @paramo  int status 修改成功为1
+	 *
+	 * @return array {
+	 *      "status":1
+	 * }
+	 *
+	 * @error   400=>TOKEN为空
+	 * @error   401=>原密码不正确(1)
+	 * @error   402=>新密码为空
+	 * @error   403=>用户未登录
+	 * @error   404=>原密码不正确(2)
+	 * @error   1024=>内部错误(数据库)
+	 * @error   1025=>无法修改密码
+	 *
+	 * @throws \Exception
+	 */
+	public function changePwd($token, $oldpwd, $newpwd) {
+		if (empty($token)) {
+			$this->error(400, 'TOKEN为空');
+		}
+		if (empty($newpwd)) {
+			$this->error(402, '新密码为空');
+		}
+		$info = $this->info($token);
+		if (!$info) {
+			$this->error(403, '用户未登录');
+		}
+		try {
+			$db     = App::db();
+			$where  = ['id' => $info['uid']];
+			$passwd = $db->select('passwd')->from('{passport}')->where($where)->get('passwd');
+			if (!$passwd && $oldpwd) {
+				$this->error(401, '原密码不正确(1)');
+			}
+			if ($passwd && !Passport::verify($oldpwd, $passwd)) {
+				$this->error(404, '原密码不正确(2)');
+			}
+			$data['passwd'] = Passport::passwd($newpwd);
+			$rst            = $db->update('{passport}')->set($data)->where($where)->exec();
+			if (!$rst) {
+				$this->error(1025, '无法修改密码');
+			}
+		} catch (\Exception $e) {
+			$this->error(1024, '内部错误');
+		}
+
 		return ['status' => 1];
 	}
 
