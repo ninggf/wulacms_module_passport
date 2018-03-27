@@ -10,6 +10,8 @@
 
 namespace passport\api\v1;
 
+use backend\form\Plupload;
+use media\classes\UploadedFile;
 use passport\classes\model\PassportTable;
 use passport\classes\RegisterUtil;
 use rest\api\v1\ClientApi;
@@ -506,7 +508,7 @@ class AccountApi extends API {
 	}
 
 	/**
-	 * 请客户端保存用户两次输入的密码相同，服务器端不校验。
+	 * 请客户端保证用户两次输入的密码相同，服务器端不校验。
 	 *
 	 * @apiName 修改密码
 	 *
@@ -628,7 +630,7 @@ class AccountApi extends API {
 					$info['phone'] = $passport['phone'];
 				}
 				if ($passport['avatar']) {
-					$info['avatar'] = $passport['avatar'];
+					$info['avatar'] = the_media_src($passport['avatar']);
 				}
 				if ($passport['gender']) {
 					$info['gender'] = $passport['gender'];
@@ -664,6 +666,70 @@ class AccountApi extends API {
 		}
 
 		return [];
+	}
+
+	/**
+	 * 更新用户头像，需要通过`multipart/form-data`表单方式上传头像.
+	 *
+	 * @apiName 更新头像
+	 *
+	 * @param string $token
+	 * @param file   $avatar 通过multipart/form-data方式上传的头像文件.
+	 *
+	 * @paramo  string avatar 更新后头像链接.
+	 *
+	 * @return array {
+	 *  "avatar":"adfadf/adfasdf/adfad.png"
+	 * }
+	 * @error   400=>TOKEN为空
+	 * @error   401=>未上传头像
+	 * @error   402=>头像保存失败的具体原因
+	 * @error   403=>用户未登录
+	 * @error   404=>保存用户头像失败
+	 * @throws
+	 */
+	public function updateAvatarPost($token, $avatar) {
+		if (empty($token)) {
+			$this->error(400, 'TOKEN为空');
+		}
+		if (!$avatar || $avatar['error']) {
+			$this->error(401, '未上传头像');
+		}
+
+		$info = $this->info($token);
+		if (!$info) {
+			$this->error(403, '用户未登录');
+		}
+		//头像大小1m
+		$file  = new UploadedFile($avatar, ['.jpg', '.png', '.gif', '.jpeg'], 1048576);
+		$dfile = $file->save(TMP_PATH . 'avatar' . DS, 1);
+		if (!$dfile) {
+			$this->error(402, $file->last_error());
+		}
+
+		$uploader = Plupload::getUploader();
+		$dest     = $uploader->save($dfile);
+		if (!$dest) {
+			$this->error(404, '保存用户头像失败');
+		}
+		$db             = App::db();
+		$where          = ['id' => $info['uid']];
+		$data['avatar'] = $dest['url'];
+		$rst            = $db->update('{passport}')->set($data)->where($where)->exec();
+		if (!$rst) {
+			$this->error(405, '更新数据库失败');
+		}
+		$info['avatar'] = the_media_src($dest['url']);
+		$expire         = App::icfgn('expire@passport', 315360000);
+		$infox          = json_encode($info);
+		$redis          = RedisClient::getRedis(App::icfg('redisdb@passport', 10));
+		if ($expire) {
+			$redis->setex($token, $expire, $infox);
+		} else {
+			$redis->set($token, $infox);
+		}
+
+		return ['avatar' => $info['avatar']];
 	}
 
 	/**
