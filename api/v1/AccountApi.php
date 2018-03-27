@@ -673,8 +673,8 @@ class AccountApi extends API {
 	 *
 	 * @apiName 更新头像
 	 *
-	 * @param string $token
-	 * @param file   $avatar 通过multipart/form-data方式上传的头像文件.
+	 * @param string $token  (required) TOKEN 登录TOKEN
+	 * @param file   $avatar (required) 通过multipart/form-data方式上传的头像文件.
 	 *
 	 * @paramo  string avatar 更新后头像链接.
 	 *
