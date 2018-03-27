@@ -486,7 +486,7 @@ class AccountApi extends API {
 			if (!$rst) {
 				$this->error($error);
 			}
-			$expire = App::icfg('expire@passport', 315360000);
+			$expire = App::icfgn('expire@passport', 315360000);
 			$redis  = RedisClient::getRedis(App::icfg('redisdb@passport', 10));
 			$info   = json_encode($info);
 			if ($expire) {
@@ -644,9 +644,9 @@ class AccountApi extends API {
 				$info = apply_filter('passport\onLogined', $info, $passport);
 				$meta = $dbx->select('name,value')->from('{passport_meta}')->where(['passport_id' => $info['uid']])->toArray('value', 'name');
 				if ($meta) {
-					$info = array_merge($meta, $info);
+					$info = array_merge($info, $meta);
 				}
-				$expire = App::icfg('expire@passport', 315360000);
+				$expire = App::icfgn('expire@passport', 315360000);
 				$infox  = json_encode($info);
 				if ($expire) {
 					$rtn = $redis->setex($token, $expire, $infox);
@@ -679,11 +679,8 @@ class AccountApi extends API {
 	 * @return string
 	 */
 	public static function createSession($oauthId, $device, $passport) {
-		$token  = md5(uniqid() . $device . $passport['id']);
-		$expire = App::icfg('expire@passport', 315360000);
-		if ($expire <= 0) {
-			$expire = 315360000;
-		}
+		$token                  = md5(uniqid() . $device . $passport['id']);
+		$expire                 = App::icfgn('expire@passport', 315360000);
 		$session['ip']          = Request::getIp();
 		$session['create_time'] = time();
 		$session['expiration']  = $session['create_time'] + $expire;

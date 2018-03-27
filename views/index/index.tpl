@@ -49,7 +49,7 @@
             <section class="w-f">
                 <div class="table-responsive">
                     <table id="table" data-auto data-table="{'passport/data'|app}" data-sort="PAS.login_time,d"
-                           style="min-width: 1200px">
+                           style="min-width: 1300px">
                         <thead>
                         <tr>
                             <th width="20">
