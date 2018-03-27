@@ -126,6 +126,8 @@ class AccountApi extends API {
 		}
 		//新手任务 绑定手机号
 		fire('ucenter\onGetTaskDone', $id, 'bind_phone');
+		//注册赠送豆子钻石
+		fire('ucenter\onGetRegister', $id);
 
 		return ['uid' => $id];
 	}
@@ -168,10 +170,7 @@ class AccountApi extends API {
 		}
 		try {
 			$db = App::db();
-			$db->update('{passport}')->set([
-				'passwd'      => Passport::passwd($password),
-				'update_time' => time()
-			])->where(['phone' => $phone])->exec(true);
+			$db->update('{passport}')->set(['passwd' => Passport::passwd($password), 'update_time' => time()])->where(['phone' => $phone])->exec(true);
 		} catch (\Exception $e) {
 			$this->error(500, '内部错误');
 		}
@@ -249,10 +248,7 @@ class AccountApi extends API {
 		}
 		//获取手机号对应的账户
 		$db       = App::db();
-		$passport = $db->select('PS.*,OA.id AS oauth_id')->from('{oauth} AS OA')->left('{passport} AS PS', 'passport_id', 'PS.id')->where([
-			'type'    => 'phone',
-			'open_id' => $phone
-		])->get();
+		$passport = $db->select('PS.*,OA.id AS oauth_id')->from('{oauth} AS OA')->left('{passport} AS PS', 'passport_id', 'PS.id')->where(['type' => 'phone', 'open_id' => $phone])->get();
 
 		if (!$passport) {
 			$this->error(404, '手机号未注册');
@@ -353,10 +349,7 @@ class AccountApi extends API {
 		try {
 			$db  = App::db();
 			$rst = $db->trans(function (DatabaseConnection $dbx) use ($phone, $info, $device, $password, $force) {
-				$passport = $dbx->select('OA.id,OA.passport_id')->from('{oauth} AS OA')->where([
-					'type'    => 'phone',
-					'open_id' => $phone
-				])->get();
+				$passport = $dbx->select('OA.id,OA.passport_id')->from('{oauth} AS OA')->where(['type' => 'phone', 'open_id' => $phone])->get();
 				if ($passport) {
 					if ($force) {
 						//修改oauth的passport_id；

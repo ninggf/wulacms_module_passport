@@ -229,6 +229,8 @@ class OauthApi extends API {
 			//新手任务 绑定微信
 			fire('ucenter\onGetTaskDone', $info['uid'], 'bind_wx');
 		}
+		//注册赠送豆子钻石
+		fire('ucenter\onGetRegister', $info['uid']);
 		return $info;
 	}
 
