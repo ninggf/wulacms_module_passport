@@ -93,11 +93,7 @@ class PassportTable extends Table {
 				if (!$this->update($up, $id)) {
 					return false;
 				}
-				fire('passport\onPassportCreated', $id);
-				//师傅信息写入统计表
-				if($data['parent']){
-					fire('ucenter\onGetInvite',$id,$data['parent']);
-				}
+				fire('passport\onPassportCreated', $id, $data);
 			}
 
 			return $id;

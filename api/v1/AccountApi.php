@@ -124,10 +124,6 @@ class AccountApi extends API {
 		if (!$id) {
 			$this->error(500, '内部错误');
 		}
-		//新手任务 绑定手机号
-		fire('ucenter\onGetTaskDone', $id, 'bind_phone');
-		//注册赠送豆子钻石
-		fire('ucenter\onGetRegister', $id);
 
 		return ['uid' => $id];
 	}
@@ -170,7 +166,10 @@ class AccountApi extends API {
 		}
 		try {
 			$db = App::db();
-			$db->update('{passport}')->set(['passwd' => Passport::passwd($password), 'update_time' => time()])->where(['phone' => $phone])->exec(true);
+			$db->update('{passport}')->set([
+				'passwd'      => Passport::passwd($password),
+				'update_time' => time()
+			])->where(['phone' => $phone])->exec(true);
 		} catch (\Exception $e) {
 			$this->error(500, '内部错误');
 		}
@@ -248,7 +247,10 @@ class AccountApi extends API {
 		}
 		//获取手机号对应的账户
 		$db       = App::db();
-		$passport = $db->select('PS.*,OA.id AS oauth_id')->from('{oauth} AS OA')->left('{passport} AS PS', 'passport_id', 'PS.id')->where(['type' => 'phone', 'open_id' => $phone])->get();
+		$passport = $db->select('PS.*,OA.id AS oauth_id')->from('{oauth} AS OA')->left('{passport} AS PS', 'passport_id', 'PS.id')->where([
+			'type'    => 'phone',
+			'open_id' => $phone
+		])->get();
 
 		if (!$passport) {
 			$this->error(404, '手机号未注册');
@@ -349,7 +351,10 @@ class AccountApi extends API {
 		try {
 			$db  = App::db();
 			$rst = $db->trans(function (DatabaseConnection $dbx) use ($phone, $info, $device, $password, $force) {
-				$passport = $dbx->select('OA.id,OA.passport_id')->from('{oauth} AS OA')->where(['type' => 'phone', 'open_id' => $phone])->get();
+				$passport = $dbx->select('OA.id,OA.passport_id')->from('{oauth} AS OA')->where([
+					'type'    => 'phone',
+					'open_id' => $phone
+				])->get();
 				if ($passport) {
 					if ($force) {
 						//修改oauth的passport_id；
@@ -388,7 +393,7 @@ class AccountApi extends API {
 				}
 				$pa['update_time'] = $data['update_time'];
 				//新手任务 绑定手机号
-				fire('ucenter\onGetTaskDone', $info['uid'], 'bind_phone');
+				fire('passport\bindPhone', $info['uid']);
 
 				return $dbx->update('{passport}')->set($pa)->where(['id' => $info['uid']])->exec();
 			}, $error);
@@ -472,6 +477,7 @@ class AccountApi extends API {
 				if ($pa && !$dbx->update('{passport}')->set($pa)->where(['id' => $info['uid']])->exec()) {
 					throw_exception('406@更新用户信息失败');
 				}
+				fire('passport\onMetaChange', $info, $dbx);
 
 				return true;
 			}, $error);
@@ -495,8 +501,6 @@ class AccountApi extends API {
 		} catch (\Exception $e) {
 			$this->error(500, '内部错误');
 		}
-		//新手任务 完善个人资料
-		fire('ucenter\onGetTaskDone', $info['uid'], 'self_info');
 
 		return ['status' => 1];
 	}
