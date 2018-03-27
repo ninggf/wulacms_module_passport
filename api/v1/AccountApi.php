@@ -692,7 +692,7 @@ class AccountApi extends API {
 		if (empty($token)) {
 			$this->error(400, 'TOKEN为空');
 		}
-		if (!$avatar || $avatar['error']) {
+		if (!$avatar || !is_array($avatar) || $avatar['error']) {
 			$this->error(401, '未上传头像');
 		}
 
