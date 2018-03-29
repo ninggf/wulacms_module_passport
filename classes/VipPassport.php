@@ -26,7 +26,7 @@ class VipPassport extends Passport {
 		$user = false;
 		if (is_numeric($data)) {
 			$passportTable = new PassportTable();
-			$user          = $passportTable->get($data, 'id,username,nickname,phone,email,avatar,gender,rec_code,status')->ary();
+			$user          = $passportTable->get($data, 'id,username,nickname,phone,avatar,gender,rec_code,status')->ary();
 			if (!$user) {
 				return false;
 			}
@@ -43,7 +43,10 @@ class VipPassport extends Passport {
 				$where['username'] = $account;
 			}
 			$passportTable = new PassportTable();
-			$user          = $passportTable->get($where, 'id,username,nickname,phone,email,avatar,gender,rec_code,status,passwd')->ary();
+			$user          = $passportTable->get($where, 'id,username,nickname,phone,avatar,gender,rec_code,status,passwd')->ary();
+			if(!$user){
+				return false;
+			}
 			$passwdCheck   = Passport::verify($passwd, $user['passwd']);
 			if (!$passwdCheck) {
 				return false;
