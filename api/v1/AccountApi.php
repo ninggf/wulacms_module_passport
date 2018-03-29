@@ -279,6 +279,58 @@ class AccountApi extends API {
 	}
 
 	/**
+	 *
+	 * 扫描屏幕二维码后，你将得到形如`@122323.2323@121212121@`的字符，需要将其解析为两段(以`@`为分隔符)，其中:
+	 *
+	 * 1. `122323.2323`为**登录凭证:**`uuid`
+	 * 2. `12121212`为二维码过期时间（二维码有效期为60秒），如果二维码过期请提醒用户刷新二维码.
+	 *
+	 *
+	 * @apiName 扫码登录
+	 *
+	 * @param string $token (required) 登录TOKEN
+	 * @param string $uuid  (required) 登录凭证（扫码时得到）
+	 *
+	 * @paramo  int status 登录成功始终为1.
+	 *
+	 * @return array {
+	 *  "status":1
+	 * }
+	 *
+	 * @error   400=>TOKEN为空
+	 * @error   401=>登录凭证为空
+	 * @error   402=>二维码已失效，请刷新二维码并重新扫描。
+	 * @error   403=>登录失败
+	 *
+	 * @throws \rest\classes\RestException
+	 * @throws \rest\classes\UnauthorizedException
+	 * @throws \Exception
+	 */
+	public function qrlogin($token, $uuid) {
+		if (!$token) {
+			$this->error(400, 'TOKEN为空');
+		}
+		if (!$uuid) {
+			$this->error(401, '登录凭证为空');
+		}
+		$info = $this->info($token);
+		if (!$info) {
+			$this->unauthorized();
+		}
+
+		$redis = self::redis();
+		$key   = md5($uuid . '@qrloing');
+		if (!$redis->exists($key)) {
+			$this->error(402, '二维码已失效，请刷新二维码并重新扫描。');
+		}
+		if (!$redis->setex($key, 60, $info['uid'])) {
+			$this->error(403, '登录失败');
+		}
+
+		return ['status' => 1];
+	}
+
+	/**
 	 * 退出登录.
 	 *
 	 * @apiName 退出
@@ -798,7 +850,7 @@ class AccountApi extends API {
 				if (!$rtn) {
 					return false;
 				}
-				$redis = RedisClient::getRedis(App::icfg('redisdb@passport', 10));
+				$redis = self::redis();
 				$meta  = $dbx->select('name,value')->from('{passport_meta}')->where(['passport_id' => $info['uid']])->toArray('value', 'name');
 				if ($meta) {
 					$info = array_merge($meta, $info);
@@ -845,5 +897,17 @@ class AccountApi extends API {
 		}
 
 		return false;
+	}
+
+	/**
+	 * 获取通行证使用的redis实例.
+	 *
+	 * @return \Redis
+	 * @throws \Exception
+	 */
+	public static function redis() {
+		$redis = RedisClient::getRedis(App::icfg('redisdb@passport', 10));
+
+		return $redis;
 	}
 }

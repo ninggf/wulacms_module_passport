@@ -5,8 +5,10 @@ namespace passport;
 use passport\api\v1\AccountApi;
 use passport\classes\model\OauthApp;
 use passport\classes\PassportSetting;
+use passport\classes\VipPassport;
 use wula\cms\CmfModule;
 use wulaphp\app\App;
+use wulaphp\auth\Passport;
 
 /**
  * Class PassportModule
@@ -158,6 +160,21 @@ class PassportModule extends CmfModule {
 	 */
 	public static function forceLogout($tokens) {
 		AccountApi::forceLogout($tokens);
+	}
+
+	/**
+	 * @param Passport $passport
+	 *
+	 * @filter passport\newVipPassport
+	 *
+	 * @return Passport
+	 */
+	public static function createPassport($passport) {
+		if ($passport instanceof Passport) {
+			$passport = new VipPassport();
+		}
+
+		return $passport;
 	}
 
 	protected function bind() {
