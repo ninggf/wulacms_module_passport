@@ -258,6 +258,7 @@ class OauthApi extends API {
 	 * @error   600=>不支持的第三方登录
 	 * @error   601=>OPENID为空
 	 * @error   602=>已经登录为其它用户
+	 * @error   603=>已经绑定过了，请不要重复绑定
 	 * @error   900=>绑定失败
 	 *
 	 * @throws
@@ -304,7 +305,7 @@ class OauthApi extends API {
 			])->get();
 			if ($oauth) {
 				if ($oauth['passport_id'] == $info['uid']) {
-					throw_exception('603@已经绑定过了，请不要重复绑定。');
+					throw_exception('603@已经绑定过了，请不要重复绑定');
 				}
 				if ($force) {
 					//修改oauth表的passport_id。
