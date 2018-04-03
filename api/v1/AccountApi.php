@@ -633,6 +633,7 @@ class AccountApi extends API {
 	 * @paramo  string avatar 头像
 	 * @paramo  int gender 性别:0未知;1男;2女
 	 * @paramo  string rec_code 推荐码
+	 * @paramo  array binds 已经绑定的登录方式
 	 * @paramo  int status 状态
 	 *
 	 * @return array {
@@ -644,6 +645,7 @@ class AccountApi extends API {
 	 *  "avatar":"http://adfasdf.com/afasd.png",
 	 *  "gender":1,
 	 *  "rec_code":"10",
+	 *  "binds":["qq","wechat"],
 	 *  "status":1
 	 * }
 	 * @error   403=>TOKEN为空
@@ -709,6 +711,11 @@ class AccountApi extends API {
 					$this->error(404, '更新数据出错');
 				}
 			}
+			$dbx           = App::db();
+			$oauth         = $dbx->select('type')->from('{oauth}')->where([
+				'passport_id' => $info['uid']
+			])->toArray('type');
+			$info['binds'] = $oauth;
 
 			return $info;
 		} catch (RestException $re) {

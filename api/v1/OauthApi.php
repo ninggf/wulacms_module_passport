@@ -303,6 +303,9 @@ class OauthApi extends API {
 				'open_id' => $openid
 			])->get();
 			if ($oauth) {
+				if ($oauth['passport_id'] == $info['uid']) {
+					throw_exception('603@已经绑定过了，请不要重复绑定。');
+				}
 				if ($force) {
 					//修改oauth表的passport_id。
 					$rst = $dbx->update('{oauth}')->set(['passport_id' => $info['uid']])->where(['id' => $oauth['id']])->exec();
