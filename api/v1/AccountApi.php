@@ -379,6 +379,7 @@ class AccountApi extends API {
 	 * @error   405=>手机号已经存在
 	 * @error   500=>内部错误
 	 * @error   900=>绑定失败
+	 * @error   901=>此账户已经绑定过手机号了
 	 *
 	 * @throws
 	 */
@@ -405,6 +406,13 @@ class AccountApi extends API {
 		try {
 			$db  = App::db();
 			$rst = $db->trans(function (DatabaseConnection $dbx) use ($phone, $info, $device, $password, $force) {
+				$pas = $dbx->select('phone')->from('{passport}')->where(['id' => $info['uid']])->get('phone');
+				if ($pas || $pas == $phone) {
+					throw_exception('901@此账户已经绑定过手机号了');
+
+					return false;
+				}
+
 				$passport = $dbx->select('OA.id,OA.passport_id')->from('{oauth} AS OA')->where([
 					'type'    => 'phone',
 					'open_id' => $phone
