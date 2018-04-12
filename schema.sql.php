@@ -95,3 +95,5 @@ $tables['1.1.0'][] = "ALTER TABLE `{prefix}passport_meta` ADD UNIQUE INDEX `UDX_
 $tables['1.1.0'][] = "ALTER TABLE `{prefix}oauth_meta` ADD UNIQUE INDEX `UDX_ID_NAME` (`oauth_id` ASC, `name` ASC)";
 
 $tables['1.1.0'][] = "ALTER TABLE `{prefix}oauth_session` ADD INDEX `IDX_TOKEN` (`token` ASC)";
+
+$tables['1.2.0'][] = "ALTER TABLE `{prefix}passport` ADD COLUMN `spl` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '推荐等级' AFTER `spm`";

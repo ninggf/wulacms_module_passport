@@ -9,6 +9,7 @@ use passport\classes\VipPassport;
 use wula\cms\CmfModule;
 use wulaphp\app\App;
 use wulaphp\auth\Passport;
+use wulaphp\db\DatabaseConnection;
 
 /**
  * Class PassportModule
@@ -35,6 +36,7 @@ class PassportModule extends CmfModule {
 	public function getVersionList() {
 		$v['1.0.0'] = '初始化模块';
 		$v['1.1.0'] = '优化数据库,添加索引';
+		$v['1.2.0'] = '添加推荐等级';
 
 		return $v;
 	}
@@ -179,6 +181,10 @@ class PassportModule extends CmfModule {
 
 	protected function bind() {
 		bind('get_columns_of_passport.table', '&\passport\classes\TableCols');
+	}
+
+	protected function upgradeTo1_2_0(DatabaseConnection $db) {
+		return $db->cudx("UPDATE {passport} SET spl = (length(spm)-length(replace(spm,'/',''))) WHERE spm <>''");
 	}
 }
 
