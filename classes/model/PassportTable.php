@@ -119,6 +119,9 @@ class PassportTable extends Table {
 			unset($data['recom']);
 			$data['parent'] = self::toId($recom);
 			$data['spm']    = $this->getSpm($recom, $this->db());
+			if ($data['spm']) {
+				$data['spl'] = count(explode('/', rtrim($data['spm'], '/')));
+			}
 		}
 		if (!isset($data['ip'])) {
 			$data['ip'] = Request::getIp();
@@ -130,7 +133,7 @@ class PassportTable extends Table {
 			if (!$this->update($up, $id)) {
 				return false;
 			}
-			fire('passport\onPassportCreated', $id);
+			fire('passport\onPassportCreated', $id, $data);
 		}
 
 		return $id;
