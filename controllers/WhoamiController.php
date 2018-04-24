@@ -14,6 +14,7 @@ use wulaphp\auth\PassportSupport;
 use wulaphp\mvc\controller\Controller;
 use wulaphp\mvc\controller\SessionSupport;
 use wulaphp\mvc\view\JsonView;
+use wulaphp\mvc\view\SimpleView;
 
 /**
  * 通过js调用获取登录用户信息.
@@ -27,7 +28,7 @@ class WhoamiController extends Controller {
 	public function index() {
 		$info = $this->passport->info();
 		unset($info['phone'], $info['email']);
-
-		return new JsonView($info);
+		$info = 'var vip_info = '.trim(json_encode($info),'"');
+		return new SimpleView($info,['Content-type'=>'text/javascript']);
 	}
 }
