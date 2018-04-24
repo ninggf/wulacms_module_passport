@@ -618,6 +618,8 @@ class AccountApi extends API {
 			if (!$rst) {
 				$this->error(1025, '无法修改密码');
 			}
+		} catch (RestException $re) {
+			throw $re;
 		} catch (\Exception $e) {
 			$this->error(1024, '内部错误');
 		}
