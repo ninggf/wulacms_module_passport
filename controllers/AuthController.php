@@ -21,6 +21,18 @@ class AuthController extends Controller {
 	use SessionSupport, PassportSupport;
 	protected $passportType = 'vip';
 
+	public function index($type, $callback) {
+		if ($type == 'info.do' && $callback) {
+			$info = $this->passport->info();
+			unset($info['phone'], $info['email']);
+			$info = $callback . '(' . json_encode($info) . ')';
+			header('Content-type: application/javascript; charset=UTF-8');
+			echo $info;
+			exit();
+		}
+		Response::respond(404);
+	}
+
 	public function loginPost($type, $account, $passwd) {
 		$data['type']    = $type;
 		$data['account'] = $account;
