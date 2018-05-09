@@ -45,18 +45,21 @@ class OauthController extends IFramePageController {
 			$where['token'] = $token;
 		}
 		if ($q) {
-			$qw = Condition::parseSearchExpression($q, [
-				'通行证'  => 'passport_id',
-				'设备'   => 'OA.device',
-				'创建时间' => '@OA.create_time',
-				'最近登录' => '@login_time',
-				'过期时间' => '@expiration',
-				'类型'   => 'type'
-			]);
+			$qw = null;
+			if (!is_numeric($q)) {
+				$qw = Condition::parseSearchExpression($q, [
+					'通行证'  => 'OA.passport_id',
+					'设备'   => 'OA.device',
+					'创建时间' => '@OA.create_time',
+					'最近登录' => '@login_time',
+					'过期时间' => '@expiration',
+					'类型'   => 'type'
+				]);
+			}
 			if ($qw) {
 				$sql->where($qw);
 			} else {
-				$where['passport_id'] = $q;
+				$where['OA.passport_id'] = $q;
 			}
 		}
 		$sql->sort()->page()->where($where);
