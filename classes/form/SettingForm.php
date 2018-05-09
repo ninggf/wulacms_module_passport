@@ -98,7 +98,7 @@ class SettingForm extends FormTable {
 	 * @type int
 	 * @digits
 	 * @range (0,15)
-	 * @layout 45,col-xs-4
+	 * @layout 45,col-xs-8
 	 * @note   登录TOKEN存储在redis的哪个库
 	 */
 	public $redisdb = 10;
