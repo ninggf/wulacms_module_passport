@@ -3,6 +3,7 @@
 namespace passport;
 
 use passport\api\v1\AccountApi;
+use passport\classes\ExpireCheckJob;
 use passport\classes\model\OauthApp;
 use passport\classes\PassportSetting;
 use passport\classes\VipPassport;
@@ -37,6 +38,7 @@ class PassportModule extends CmfModule {
 		$v['1.0.0'] = '初始化模块';
 		$v['1.1.0'] = '优化数据库,添加索引';
 		$v['1.2.0'] = '添加推荐等级';
+		$v['1.2.1'] = '添加移动端不重复登录支持';
 
 		return $v;
 	}
@@ -177,6 +179,18 @@ class PassportModule extends CmfModule {
 		}
 
 		return $passport;
+	}
+
+	/**
+	 * 定时清空过期登录会话
+	 *
+	 * @param int $time
+	 *
+	 * @bind crontab
+	 */
+	public static function crontab($time) {
+		$ck = new ExpireCheckJob();
+		$ck->run();
 	}
 
 	protected function bind() {

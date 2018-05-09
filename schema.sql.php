@@ -97,3 +97,8 @@ $tables['1.1.0'][] = "ALTER TABLE `{prefix}oauth_meta` ADD UNIQUE INDEX `UDX_ID_
 $tables['1.1.0'][] = "ALTER TABLE `{prefix}oauth_session` ADD INDEX `IDX_TOKEN` (`token` ASC)";
 
 $tables['1.2.0'][] = "ALTER TABLE `{prefix}passport` ADD COLUMN `spl` SMALLINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '推荐等级' AFTER `spm`";
+
+$tables['1.2.1'][] = "ALTER TABLE `{prefix}oauth_session` 
+ADD COLUMN `passport_id` INT(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT '通行证ID' AFTER `create_time`";
+
+$tables['1.2.1'][] = "ALTER TABLE `{prefix}oauth_session` ADD INDEX `IDX_UID` (`passport_id` ASC)";

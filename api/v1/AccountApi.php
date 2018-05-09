@@ -812,13 +812,14 @@ class AccountApi extends API {
 	 */
 	public static function createSession($oauthId, $device, $passport) {
 		$token                  = md5(uniqid() . $device . $passport['id']);
-		$expire                 = App::icfgn('expire@passport', 315360000);
+		$expire                 = App::icfgn('expire@passport', 3650) * 86400;
 		$session['ip']          = Request::getIp();
 		$session['create_time'] = time();
 		$session['expiration']  = $session['create_time'] + $expire;
 		$session['token']       = $token;
 		$session['oauth_id']    = $oauthId;
 		$session['device']      = $device;
+		$session['passport_id'] = $passport['id'];
 		try {
 			$db  = App::db();
 			$rst = $db->trans(function (DatabaseConnection $dbx) use ($session, $passport, $expire, $oauthId) {
@@ -885,6 +886,26 @@ class AccountApi extends API {
 
 				return false;
 			}
+			if (!App::bcfg('sameapp@passport', false)) {
+				//如果不允许同端登录
+				$where['token <>']    = $token;
+				$where['passport_id'] = $passport['id'];
+				$devices              = ['ios', 'android'];
+				$pads                 = ['ipad', 'pad'];
+				if (in_array($device, $devices)) {
+					$where['device IN'] = $devices;
+				} else if (in_array($device, $pads)) {
+					$where['device IN'] = $pads;
+				}
+				if (isset($where['device IN'])) {
+					$tokens = $db->select('token')->from('{oauth_session}')->where($where)->toArray('token');
+					if ($tokens) {
+						$redis = self::redis();
+						$redis->del($tokens);
+						$db->delete()->from('{oauth_session}')->where($where)->exec();
+					}
+				}
+			}
 		} catch (\Exception $e) {
 			return false;
 		}
@@ -900,17 +921,17 @@ class AccountApi extends API {
 	 * @return bool
 	 */
 	public static function forceLogout($tokens) {
-		try {
-			$redis = RedisClient::getRedis(App::icfg('redisdb@passport', 10));
-			foreach ((array)$tokens as $t) {
-				$redis->del($t);
+		if ($tokens) {
+			try {
+				$redis = self::redis();
+				$redis->del((array)$tokens);
+				$db = App::db();
+				$db->update('{oauth_session}')->set(['expiration' => time()])->where(['token IN' => (array)$tokens])->exec();
+
+				return true;
+			} catch (\Exception $e) {
+
 			}
-			$db = App::db();
-			$db->update('{oauth_session}')->set(['expiration' => time()])->where(['token IN' => (array)$tokens])->exec();
-
-			return true;
-		} catch (\Exception $e) {
-
 		}
 
 		return false;

@@ -39,6 +39,12 @@ class SettingForm extends FormTable {
 	 */
 	public $captcha = 0;
 	/**
+	 * 允许移动端重复登录
+	 * @var \backend\form\CheckboxField
+	 * @type bool
+	 */
+	public $sameapp = 0;
+	/**
 	 * 允许修改用户资料
 	 * @var \backend\form\CheckboxField
 	 * @type bool
