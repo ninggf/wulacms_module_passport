@@ -71,7 +71,7 @@ class AccountApi extends API {
 		if (!$this->sessionId) {
 			$this->error(405, '未开启SESSION');
 		}
-		if (!isset(ClientApi::device[ $device ])) {
+		if (!ClientApi::checkDevice($device)) {
 			$this->error(400, '未知设备');
 		}
 		if (!preg_match('/^1[3456789]\d{9}$/', $phone)) {

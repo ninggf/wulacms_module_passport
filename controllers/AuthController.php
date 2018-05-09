@@ -12,6 +12,7 @@ namespace passport\controllers;
 
 use backend\classes\CaptchaCode;
 use passport\api\v1\AccountApi;
+use wulaphp\app\App;
 use wulaphp\auth\PassportSupport;
 use wulaphp\io\Response;
 use wulaphp\mvc\controller\Controller;
@@ -33,21 +34,23 @@ class AuthController extends Controller {
 		Response::respond(404);
 	}
 
-	public function loginPost($type, $account, $passwd,$captcha) {
+	public function loginPost($type, $account, $passwd, $captcha = '') {
+		if (App::bcfg('captcha@passport', false)) {
+			if (!$captcha) {
+				return ['error' => 1, 'msg' => '请输入验证码'];
+			}
+			$validate = (new CaptchaCode('vip_captcha_code'))->validate($captcha, false, true);
+			if (!$validate) {
+				return ['error' => 1, 'msg' => '验证码错误'];
+			}
+		}
 		$data['type']    = $type;
 		$data['account'] = $account;
 		$data['passwd']  = $passwd;
-		if(!$captcha){
-			return ['error' => 1, 'msg' => '请输入验证码'];
-		}
-		$validate = (new CaptchaCode('vip_captcha_code'))->validate($captcha,false,true);
-		if(!$validate){
-			return ['error' => 1, 'msg' => '验证码错误'];
-		}
 		if ($this->passport->login($data)) {
 			return $this->passport->info();
 		} else {
-			return ['error' => 1, 'msg' => '登录失败'];
+			return ['error' => 1, 'msg' => '登录失败(' . $this->passport->error . ')'];
 		}
 	}
 

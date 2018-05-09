@@ -28,6 +28,8 @@ class VipPassport extends Passport {
 			$passportTable = new PassportTable();
 			$user          = $passportTable->get($data, 'id,username,nickname,phone,avatar,gender,rec_code,status')->ary();
 			if (!$user) {
+				$this->error = '用户不存在';
+
 				return false;
 			}
 		} else if (is_array($data)) {
@@ -35,6 +37,8 @@ class VipPassport extends Passport {
 			$account = aryget('account', $data);
 			$passwd  = aryget('passwd', $data);
 			if (!$account) {
+				$this->error = '用户名为空';
+
 				return false;
 			}
 			if ($type == 'phone') {
@@ -44,15 +48,21 @@ class VipPassport extends Passport {
 			}
 			$passportTable = new PassportTable();
 			$user          = $passportTable->get($where, 'id,username,nickname,phone,avatar,gender,rec_code,status,passwd')->ary();
-			if(!$user){
+			if (!$user) {
+				$this->error = '用户名密码不匹配';
+
 				return false;
 			}
-			$passwdCheck   = Passport::verify($passwd, $user['passwd']);
+			$passwdCheck = Passport::verify($passwd, $user['passwd']);
 			if (!$passwdCheck) {
+				$this->error = '用户名密码不匹配';
+
 				return false;
 			}
 		}
 		if (!$user) {
+			$this->error = '用户不存在';
+
 			return false;
 		}
 		$needBind = App::bcfg('need_bind@passport');
@@ -61,6 +71,8 @@ class VipPassport extends Passport {
 		}
 		$user = apply_filter('passport\onLogined', $user, $user);
 		if (!$user) {
+			$this->error = '不允许登录';
+
 			return false;
 		}
 		$this->uid               = $user['id'];

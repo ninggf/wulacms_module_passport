@@ -27,11 +27,17 @@ class SettingForm extends FormTable {
 	 */
 	public $need_bind = 0;
 	/**
-	 * 验证码登录
+	 * 短信登录
 	 * @var \backend\form\CheckboxField
 	 * @type bool
 	 */
 	public $code_login = 0;
+	/**
+	 * 开启验证码验证
+	 * @var \backend\form\CheckboxField
+	 * @type bool
+	 */
+	public $captcha = 0;
 	/**
 	 * 允许修改用户资料
 	 * @var \backend\form\CheckboxField
@@ -48,14 +54,16 @@ class SettingForm extends FormTable {
 	 * 必须邀请才能注册
 	 * @var \backend\form\CheckboxField
 	 * @type bool
+	 * @layout 35,col-xs-4
 	 */
 	public $need_rec = 0;
 	/**
-	 * 邀请码最多使用次数
+	 *
 	 * @var \backend\form\TextField
 	 * @type int
 	 * @digits
-	 * @note 0表示不限制
+	 * @note   邀请码最多使用次数(0表示不限制)
+	 * @layout 35,col-xs-8
 	 */
 	public $max_rec = 0;
 	/**
@@ -63,7 +71,7 @@ class SettingForm extends FormTable {
 	 * @var \backend\form\TextField
 	 * @type int
 	 * @digits
-	 * @layout 40,col-xs-6
+	 * @layout 40,col-xs-4
 	 * @note   最大账户，0为不限速
 	 */
 	public $max_count = 0;
@@ -71,7 +79,7 @@ class SettingForm extends FormTable {
 	 * @var \backend\form\TextField
 	 * @type int
 	 * @digits
-	 * @layout 40,col-xs-6
+	 * @layout 40,col-xs-8
 	 * @note   间隔，单位秒
 	 */
 	public $interval = 60;
@@ -80,7 +88,7 @@ class SettingForm extends FormTable {
 	 * @var \backend\form\TextField
 	 * @type int
 	 * @digits
-	 * @layout 45,col-xs-6
+	 * @layout 45,col-xs-4
 	 * @note   0表示久不过期
 	 */
 	public $expire = 0;
@@ -90,7 +98,7 @@ class SettingForm extends FormTable {
 	 * @type int
 	 * @digits
 	 * @range (0,15)
-	 * @layout 45,col-xs-6
+	 * @layout 45,col-xs-4
 	 * @note   登录TOKEN存储在redis的哪个库
 	 */
 	public $redisdb = 10;
