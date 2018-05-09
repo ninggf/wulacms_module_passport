@@ -270,7 +270,7 @@ class PassportTable extends Table {
 		if (!is_array($ids)) {
 			$ids = [$ids];
 		}
-		$where['passport_id IN'] = $ids;
+		$where['OA.passport_id IN'] = $ids;
 		if ($type) {
 			$where['type'] = $type;
 		}

@@ -82,7 +82,7 @@ class OauthController extends IFramePageController {
 	 * @return \wulaphp\mvc\view\View
 	 */
 	public function view($id) {
-		$data['passport_id'] = $id;
+		$data['OA.passport_id'] = $id;
 		$table               = new OauthTable();
 		$sql                 = $table->alias('OA')->select('OA.*,OS.ip,OS.token,OS.expiration');
 		$sql->join('{oauth_session} AS OS', 'OA.id = OS.oauth_id AND OA.login_time = OS.create_time AND OA.device = OS.device');

@@ -71,7 +71,7 @@ class OauthSessionTable extends Table {
 				if ($meta) {
 					$info = array_merge($meta, $info);
 				}
-				$expire = App::icfg('expire@passport', 315360000);
+				$expire = App::icfgn('expire@passport', 3650)*86400;
 				$infox  = json_encode($info);
 				if ($expire) {
 					$rtn = $redis->setex($token, $expire, $infox);
