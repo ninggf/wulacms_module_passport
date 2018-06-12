@@ -29,24 +29,66 @@ class OauthForm extends FormTable {
 	 */
 	public $status = 1;
 	/**
-	 * 启用苹果
+	 * 苹果
 	 * @var \backend\form\CheckboxField
 	 * @type bool
-	 * @layout 1,col-xs-3
+	 * @layout 2,col-xs-3
 	 */
 	public $ios = 1;
 	/**
-	 * 启用安卓
+	 * iPad
 	 * @var \backend\form\CheckboxField
 	 * @type bool
-	 * @layout 1,col-xs-3
+	 * @layout 2,col-xs-3
+	 */
+	public $ipad = 0;
+	/**
+	 * 安卓
+	 * @var \backend\form\CheckboxField
+	 * @type bool
+	 * @layout 3,col-xs-3
 	 */
 	public $android = 1;
 	/**
-	 * 启用WEB
+	 * 安卓平板
 	 * @var \backend\form\CheckboxField
 	 * @type bool
-	 * @layout 1,col-xs-3
+	 * @layout 3,col-xs-3
+	 */
+	public $pad = 0;
+	/**
+	 * 微信小程序
+	 * @var \backend\form\CheckboxField
+	 * @type bool
+	 * @layout 3,col-xs-3
+	 */
+	public $wxapp = 0;
+	/**
+	 * 微信小游戏
+	 * @var \backend\form\CheckboxField
+	 * @type bool
+	 * @layout 3,col-xs-3
+	 */
+	public $wxgame = 0;
+	/**
+	 * WEB
+	 * @var \backend\form\CheckboxField
+	 * @type bool
+	 * @layout 4,col-xs-3
 	 */
 	public $web = 1;
+	/**
+	 * PC端
+	 * @var \backend\form\CheckboxField
+	 * @type bool
+	 * @layout 4,col-xs-3
+	 */
+	public $pc = 0;
+	/**
+	 * H5
+	 * @var \backend\form\CheckboxField
+	 * @type bool
+	 * @layout 4,col-xs-3
+	 */
+	public $h5 = 0;
 }

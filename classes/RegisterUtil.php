@@ -53,12 +53,11 @@ class RegisterUtil {
 			$total = $db->select(imv('COUNT(id)', 'total'))->from('{passport}')->where([
 				'ip'             => $ip,
 				'create_time >=' => $time
-			])->get('total');
-			if ($total >= $max_count) {
+			])->get();
+			if ($total && $total['total'] >= $max_count) {
 				return false;
 			}
 		} catch (\Exception $e) {
-
 		}
 
 		return true;
@@ -100,8 +99,6 @@ class RegisterUtil {
 
 		return false;
 	}
-
-
 
 	/**
 	 * 手机是否有效.

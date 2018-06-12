@@ -22,19 +22,64 @@ class AuthController extends Controller {
 	use SessionSupport, PassportSupport;
 	protected $passportType = 'vip';
 
-	public function index($type, $callback) {
-		if ($type == 'info.do' && $callback) {
+	/**
+	 * 获取用户信息.
+	 *
+	 * @param string $type     目前只支持info.do
+	 * @param string $callback JSONP的回调(如果是的话)
+	 *
+	 * @throws
+	 * @return mixed
+	 */
+	public function index($type, $callback = '') {
+		if ($type == 'info.do') {
+			$utoken = $_COOKIE['utoken'];
+			if ($utoken) {
+				$arr       = explode(':', $utoken);
+				$uid       = base_convert($arr[1], 36, 10);
+				$pass_info = App::db()->select('id,nickname,avatar,passwd,phone')->from('{passport}')->where(['id' => $uid])->get();
+				if ($pass_info['passwd']) {
+					$agent = $_SERVER['HTTP_USER_AGENT'];
+					$hash  = md5($uid . $pass_info['passwd'] . $agent) . ':' . base_convert($uid, 10, 36);
+					if ($hash == $utoken) {
+						$this->passport->isLogin  = true;
+						$this->passport->uid      = $pass_info['id'];
+						$this->passport->phone    = $pass_info['phone'];
+						$this->passport->nickname = $pass_info['nickname'] ? $pass_info['nickname'] : substr_replace($pass_info['phone'], '****', 3, 4);
+						$this->passport->avatar   = $pass_info['avatar'] ? $pass_info['avatar'] : 'images/touxiang.png';
+						$this->passport->store();
+					}
+				}
+
+			}
 			$info = $this->passport->info();
 			unset($info['phone'], $info['email']);
-			$info = $callback . '(' . json_encode($info) . ')';
-			header('Content-type: application/javascript; charset=UTF-8');
-			echo $info;
-			exit();
+			if ($callback) {
+				$info = $callback . '(' . json_encode($info) . ')';
+				header('Content-type: application/javascript; charset=UTF-8');
+				echo $info;
+				exit();
+			} else {
+				return $info;
+			}
 		}
 		Response::respond(404);
+
+		return null;
 	}
 
+	/**
+	 * @param    string $type
+	 * @param    string $account
+	 * @param    string $passwd
+	 * @param string    $captcha
+	 *
+	 * @throws
+	 * @return array
+	 */
 	public function loginPost($type, $account, $passwd, $captcha = '') {
+		//是否开启自动登录
+		$auto_login = rqst('auto_login');
 		if (App::bcfg('captcha@passport', false)) {
 			if (!$captcha) {
 				return ['error' => 1, 'msg' => '请输入验证码'];
@@ -48,6 +93,17 @@ class AuthController extends Controller {
 		$data['account'] = $account;
 		$data['passwd']  = $passwd;
 		if ($this->passport->login($data)) {
+			if ($auto_login) {
+				$uid   = $this->passport->uid;
+				$agent = $_SERVER['HTTP_USER_AGENT'];
+				$pass  = App::db()->select('passwd')->from('{passport}')->where(['id' => $uid])->get('passwd');
+				$hash  = md5($uid . $pass . $agent) . ':' . base_convert($uid, 10, 36);
+				Response::cookie('utoken', $hash, 86400 * 30);
+			} else {
+				Response::cookie('utoken');
+			}
+			fire('passport\bindPhone', $this->passport->uid);
+
 			return $this->passport->info();
 		} else {
 			return ['error' => 1, 'msg' => '登录失败(' . $this->passport->error . ')'];
@@ -81,7 +137,12 @@ class AuthController extends Controller {
 		$type          = in_array($type, ['gif', 'png']) ? $type : 'png';
 		$auth_code_obj = new CaptchaCode('vip_captcha_code');
 		// 定义验证码信息
-		$arr ['code'] = ['characters' => 'A-H,J-K,M-N,P-Z,3-9', 'length' => 4, 'deflect' => true, 'multicolor' => true];
+		$arr ['code'] = [
+			'characters' => 'A-H,K-N,P-R,U-Y,2-4,6-9',
+			'length'     => 4,
+			'deflect'    => true,
+			'multicolor' => true
+		];
 		$auth_code_obj->setCode($arr ['code']);
 		// 定义干扰信息
 		$arr ['molestation'] = ['type' => 'both', 'density' => 'normal'];
@@ -105,6 +166,7 @@ class AuthController extends Controller {
 	 * @return array
 	 */
 	public function signout() {
+		Response::cookie('utoken');
 		$this->passport->logout();
 
 		return ['error' => 0];
@@ -116,11 +178,17 @@ class AuthController extends Controller {
 	public function qrcode() {
 		try {
 			$redis = AccountApi::redis();
-			$uuid  = uniqid('', true);
-			$key   = md5($uuid . '@qrloing');
-			if ($redis->setex($key, 60, '0')) {
+			//删除前一个key
+			$key = sess_get('myqr_uuid');
+			if ($key) {
+				$redis->del($key);
+			}
+			//生成新的key
+			$uuid = uniqid('', true);
+			$key  = md5($uuid . '@qrloing');
+			if ($redis->setex($key, 120, '0')) {
 				$_SESSION['myqr_uuid'] = $key;
-				$text                  = "@{$uuid}@" . (time() + 60) . '@';
+				$text                  = "@{$uuid}@" . (time() + 120) . '@1.0@';
 				\QRcode::png($text, false, QR_ECLEVEL_M, 6, 2, true);
 				exit();
 			}
@@ -132,18 +200,25 @@ class AuthController extends Controller {
 	/**
 	 * 检测二维码登录状态.
 	 *
+	 * @param string $callback jsonp的callback(如果是的话)
 	 *
-	 * @return array
+	 * @return array|string
+	 *
+	 * @throws
 	 */
-	public function qrlogin() {
+	public function qrlogin($callback = '') {
 		try {
 			$redis = AccountApi::redis();
 			$key   = sess_get('myqr_uuid');
 			if (!$key || !$redis->exists($key)) {
-				return ['uid' => -1, 'error' => 0];
+				return $this->qrrtn(['id' => -1, 'error' => 0, 'msg' => 'refresh qrcode'], $callback);
 			}
 			$uid = $redis->get($key);
 			if ($uid) {
+				if (!is_numeric($uid)) {
+					//等待手机端确认.
+					return $this->qrrtn(['id' => -1, 'error' => 1, 'msg' => 'please confirm on your phone'], $callback);
+				}
 				$redis->del($key);
 				if ($this->passport->login($uid)) {
 					$info          = $this->passport->info();
@@ -151,16 +226,37 @@ class AuthController extends Controller {
 					unset($info['phone'], $info['email']);
 
 					//登录成功
-					return $info;
+					return $this->qrrtn($info, $callback);
 				}
 
 				//需要刷新二维码
-				return ['uid' => -1, 'error' => 0];
+				return $this->qrrtn(['id' => -1, 'error' => 0, 'msg' => 'login fail'], $callback);
 			}
 		} catch (\Exception $e) {
+			throw_exception('cannot connect to passport server');
 		}
 
 		//等待用户扫描
-		return ['uid' => 0, 'error' => 0];
+		return $this->qrrtn(['id' => 0, 'error' => 0, 'msg' => 'please scan the qrcode'], $callback);
 	}
+
+	/**
+	 * 生成qr的返回.
+	 *
+	 * @param array  $rtn
+	 * @param string $callback
+	 *
+	 * @return mixed
+	 */
+	private function qrrtn($rtn, $callback) {
+		if ($callback) {
+			$info = $callback . '(' . json_encode($rtn) . ')';
+			header('Content-type: application/javascript; charset=UTF-8');
+			echo $info;
+			exit();
+		} else {
+			return $rtn;
+		}
+	}
+
 }

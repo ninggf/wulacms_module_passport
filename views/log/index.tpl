@@ -23,7 +23,7 @@
             <section class="w-f">
                 <div class="table-responsive">
                     <table id="table" data-auto data-table="{'passport/log/data'|app}" data-sort="OS.create_time,d"
-                           style="min-width: 900px">
+                           style="min-width: 1300px">
                         <thead>
                         <tr>
                             <th width="20">

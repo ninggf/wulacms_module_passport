@@ -17,8 +17,9 @@ class ExpireCheckJob implements ICrontabJob {
 	public function run() {
 		try {
 			$db = App::db();
-			$db->reconnect();
-			$time = time();
+			//删除过期登录日志
+			$day  = App::icfgn('keepday@passport', 365);
+			$time = strtotime('-' . $day . ' days');
 			$db->cud('DELETE FROM {oauth_session} WHERE expiration < ' . $time);
 		} catch (\Exception $e) {
 			log_warn($e->getMessage(), 'expire_check');

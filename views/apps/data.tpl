@@ -14,11 +14,35 @@
             <i class="fa fa-check text-success text-active"></i>
             <i class="fa fa-times text-danger text"></i>
         </td>
+        <td class="{if $row.ipad}active{/if}">
+            <i class="fa fa-check text-success text-active"></i>
+            <i class="fa fa-times text-danger text"></i>
+        </td>
         <td class="{if $row.android}active{/if}">
             <i class="fa fa-check text-success text-active"></i>
             <i class="fa fa-times text-danger text"></i>
         </td>
+        <td class="{if $row.pad}active{/if}">
+            <i class="fa fa-check text-success text-active"></i>
+            <i class="fa fa-times text-danger text"></i>
+        </td>
         <td class="{if $row.web}active{/if}">
+            <i class="fa fa-check text-success text-active"></i>
+            <i class="fa fa-times text-danger text"></i>
+        </td>
+        <td class="{if $row.pc}active{/if}">
+            <i class="fa fa-check text-success text-active"></i>
+            <i class="fa fa-times text-danger text"></i>
+        </td>
+        <td class="{if $row.h5}active{/if}">
+            <i class="fa fa-check text-success text-active"></i>
+            <i class="fa fa-times text-danger text"></i>
+        </td>
+        <td class="{if $row.wxgame}active{/if}">
+            <i class="fa fa-check text-success text-active"></i>
+            <i class="fa fa-times text-danger text"></i>
+        </td>
+        <td class="{if $row.wxapp}active{/if}">
             <i class="fa fa-check text-success text-active"></i>
             <i class="fa fa-times text-danger text"></i>
         </td>
@@ -31,7 +55,7 @@
     </tr>
     {foreachelse}
     <tr>
-        <td colspan="8">无数据</td>
+        <td colspan="14">无数据</td>
     </tr>
 {/foreach}
 </tbody>

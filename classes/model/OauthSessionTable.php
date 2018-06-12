@@ -33,6 +33,12 @@ class OauthSessionTable extends Table {
 			if (!$info) {
 				return false;
 			}
+			//账户在其它同类型设备登录
+			if ($info == 'oc') {
+				$redis->del($token);
+				status_header(401);
+				exit();
+			}
 			$info = @json_decode($info, true);
 			if (!$info) {
 				$redis->del($token);
@@ -66,21 +72,20 @@ class OauthSessionTable extends Table {
 				if ($needBind && empty($info['phone'])) {
 					$info['status'] = 2;//需要绑定手机
 				}
-				$info = apply_filter('passport\onLogined', $info, $passport);
 				$meta = $dbx->select('name,value')->from('{passport_meta}')->where(['passport_id' => $info['uid']])->toArray('value', 'name');
 				if ($meta) {
 					$info = array_merge($meta, $info);
 				}
-				$expire = App::icfgn('expire@passport', 3650)*86400;
-				$infox  = json_encode($info);
+				$info   = apply_filter('passport\onLogined', $info, $passport);
+				$expire = App::icfgn('expire@passport', 3650) * 86400;
+
+				$infox = json_encode($info);
 				if ($expire) {
 					$rtn = $redis->setex($token, $expire, $infox);
 				} else {
 					$rtn = $redis->set($token, $infox);
 				}
 				if (!$rtn) {
-					$redis->del($token);
-
 					return false;
 				}
 			}

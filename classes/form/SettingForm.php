@@ -103,8 +103,18 @@ class SettingForm extends FormTable {
 	 * @var \backend\form\TextField
 	 * @type int
 	 * @digits
+	 * @range (0,1000)
+	 * @layout 45,col-xs-4
+	 * @note   登录日志保留天数
+	 */
+	public $keepday = 365;
+	/**
+	 *
+	 * @var \backend\form\TextField
+	 * @type int
+	 * @digits
 	 * @range (0,15)
-	 * @layout 45,col-xs-8
+	 * @layout 45,col-xs-4
 	 * @note   登录TOKEN存储在redis的哪个库
 	 */
 	public $redisdb = 10;

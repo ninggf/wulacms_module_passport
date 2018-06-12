@@ -39,6 +39,8 @@ class PassportModule extends CmfModule {
 		$v['1.1.0'] = '优化数据库,添加索引';
 		$v['1.2.0'] = '添加推荐等级';
 		$v['1.2.1'] = '添加移动端不重复登录支持';
+		$v['1.2.2'] = '添加ipad,与pad设备';
+		$v['1.2.3'] = '添加pc,h5,wxapp,wxgame设备';
 
 		return $v;
 	}
@@ -185,8 +187,6 @@ class PassportModule extends CmfModule {
 	 * 定时清空过期登录会话
 	 *
 	 * @param int $time
-	 *
-	 * @bind crontab
 	 */
 	public static function crontab($time) {
 		$ck = new ExpireCheckJob();

@@ -238,6 +238,8 @@ class IndexController extends IFramePageController {
 			]);
 			if ($qw) {
 				$sql->where($qw);
+			} else if (is_numeric($q)) {
+				$where['PAS.id'] = (int)$q;
 			} else {
 				$where['PAS.username LIKE'] = "%$q%";
 			}

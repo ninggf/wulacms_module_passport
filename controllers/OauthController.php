@@ -59,7 +59,7 @@ class OauthController extends IFramePageController {
 			if ($qw) {
 				$sql->where($qw);
 			} else {
-				$where['OA.passport_id'] = $q;
+				$where['OA.passport_id'] = (int)$q;
 			}
 		}
 		$sql->sort()->page()->where($where);

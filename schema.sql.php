@@ -102,3 +102,13 @@ $tables['1.2.1'][] = "ALTER TABLE `{prefix}oauth_session`
 ADD COLUMN `passport_id` INT(10) UNSIGNED NOT NULL DEFAULT 0 COMMENT '通行证ID' AFTER `create_time`";
 
 $tables['1.2.1'][] = "ALTER TABLE `{prefix}oauth_session` ADD INDEX `IDX_UID` (`passport_id` ASC)";
+
+$tables['1.2.2'][] = "ALTER TABLE `{prefix}oauth_app` 
+ADD COLUMN `pad` TINYINT(3) UNSIGNED NOT NULL DEFAULT 0 COMMENT '安卓pad' AFTER `web`,
+ADD COLUMN `ipad` TINYINT(3) UNSIGNED NOT NULL DEFAULT 0 COMMENT 'iPad' AFTER `pad`";
+
+$tables['1.2.3'][] = "ALTER TABLE `{prefix}oauth_app` 
+ADD COLUMN `pc` TINYINT(3) UNSIGNED NOT NULL DEFAULT 0 COMMENT '桌面' AFTER `ipad`,
+ADD COLUMN `wxapp` TINYINT(3) UNSIGNED NOT NULL DEFAULT 0 COMMENT '小程序' AFTER `pc`,
+ADD COLUMN `wxgame` TINYINT(3) UNSIGNED NOT NULL DEFAULT 0 COMMENT '小游戏' AFTER `wxapp`,
+ADD COLUMN `h5` TINYINT(3) UNSIGNED NOT NULL DEFAULT 0 COMMENT 'H5' AFTER `wxgame`";

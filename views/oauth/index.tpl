@@ -22,7 +22,7 @@
             <section class="w-f">
                 <div class="table-responsive">
                     <table id="table" data-auto data-table="{'passport/oauth/data'|app}" data-sort="passport_id,d"
-                           style="min-width: 1100px">
+                           style="min-width: 1300px">
                         <thead>
                         <tr>
                             <th width="20">

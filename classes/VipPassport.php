@@ -75,17 +75,28 @@ class VipPassport extends Passport {
 
 			return false;
 		}
+		//封号
+		if($user['status']==0){
+			$this->error = '账号已被禁用,联系客服';
+
+			return false;
+		}
 		$this->uid               = $user['id'];
 		$this->username          = $user['username'];
-		$this->nickname          = $user['nickname'];
+		$this->nickname          = $user['nickname']?$user['nickname']:substr_replace($user['phone'], '****', 3, 4);
 		$this->phone             = $user['phone'];
 		$this->email             = $user['email'];
-		$this->avatar            = $user['avatar'] ? $user['avatar'] : App::assets('wula/jqadmin/images/avatar.jpg');
+		$this->avatar            = $user['avatar'] ? $user['avatar'] : 'images/touxiang.png';
 		$this->data['gender']    = $user['gender'];
 		$this->data['status']    = $user['status'];
 		$this->data['rec_code']  = $user['rec_code'];
 		$this->data['logintime'] = time();
 
 		return true;
+	}
+
+	public function store() {
+		fire('passport\onVipPassportLogin',$this);
+		return parent::store();
 	}
 }

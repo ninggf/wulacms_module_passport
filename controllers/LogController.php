@@ -48,7 +48,7 @@ class LogController extends IFramePageController {
 		}
 		if ($q) {
 			$qw = Condition::parseSearchExpression($q, [
-				'通行证'  => 'passport_id',
+				'通行证'  => 'OS.passport_id',
 				'设备'   => 'OS.device',
 				'最近登录' => '@OS.create_time',
 				'过期时间' => '@expiration',
@@ -57,7 +57,7 @@ class LogController extends IFramePageController {
 			if ($qw) {
 				$sql->where($qw);
 			} else {
-				$where['passport_id'] = $q;
+				$where['OA.passport_id'] = (int)$q;
 			}
 		}
 		$sql->sort()->page()->where($where);

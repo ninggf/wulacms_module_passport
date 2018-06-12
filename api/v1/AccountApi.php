@@ -119,6 +119,7 @@ class AccountApi extends API {
 		}
 		$data['username'] = uniqid();
 		$data['status']   = 1;
+		$data['nickname'] = substr($phone, 0, 3) . '****' . substr($phone, 7, 4);
 		$data['channel']  = $channel;
 		$data['device']   = $device;
 		$data['ip']       = $ip;
@@ -280,11 +281,70 @@ class AccountApi extends API {
 
 	/**
 	 *
-	 * 扫描屏幕二维码后，你将得到形如`@122323.2323@121212121@`的字符，需要将其解析为两段(以`@`为分隔符)，其中:
+	 * 扫描屏幕二维码后，你将得到形如`@122323.2323@121212121@1.0@`的字符，需要将其解析为两段(以`@`为分隔符)，其中:
 	 *
 	 * 1. `122323.2323`为**登录凭证:**`uuid`
 	 * 2. `12121212`为二维码过期时间（二维码有效期为60秒），如果二维码过期请提醒用户刷新二维码.
+	 * 3. `1.0`为版本号
 	 *
+	 * @apiName 扫码登录确认
+	 *
+	 * @param string $token (required) 登录TOKEN
+	 * @param string $uuid  (required) 登录凭证（扫码时得到）
+	 * @paramo  int status 登录成功始终为1.
+	 *
+	 * @return array {
+	 *  "status":1
+	 * }
+	 *
+	 * @error   400=>TOKEN为空
+	 * @error   401=>登录凭证为空
+	 * @error   402=>二维码已失效，请刷新二维码并重新扫描。
+	 * @error   403=>请在手机端确认登录
+	 * @error   404=>登录失败
+	 *
+	 * @throws \rest\classes\RestException
+	 * @throws \rest\classes\UnauthorizedException
+	 * @throws \Exception
+	 */
+	public function qrconfirm($token, $uuid) {
+		if (!$token) {
+			$this->error(400, 'TOKEN为空');
+		}
+		if (!$uuid) {
+			$this->error(401, '登录凭证为空');
+		}
+		$info = $this->info($token);
+		if (!$info) {
+			$this->unauthorized();
+		}
+
+		$redis = self::redis();
+		$key   = md5($uuid . '@qrloing');
+		$muuid = $redis->get($key);
+		//二维码失效
+		if (!$muuid) {
+			$this->error(402, '二维码已失效，请刷新二维码并重新扫描。');
+		}
+		//未确认
+		if ($muuid !== $uuid) {
+			$this->error(403, '请在手机端确认登录。');
+		}
+
+		if (!$redis->setex($key, 60, $info['uid'])) {
+			$this->error(404, '登录失败[内部错误]');
+		}
+
+		return ['status' => 1];
+	}
+
+	/**
+	 *
+	 * 扫描屏幕二维码后，你将得到形如`@122323.2323@121212121@1.0@`的字符，需要将其解析为两段(以`@`为分隔符)，其中:
+	 *
+	 * 1. `122323.2323`为**登录凭证:**`uuid`
+	 * 2. `12121212`为二维码过期时间（二维码有效期为120秒），如果二维码过期请提醒用户刷新二维码.
+	 * 3. `1.0`为版本号
 	 *
 	 * @apiName 扫码登录
 	 *
@@ -323,8 +383,9 @@ class AccountApi extends API {
 		if (!$redis->exists($key)) {
 			$this->error(402, '二维码已失效，请刷新二维码并重新扫描。');
 		}
-		if (!$redis->setex($key, 60, $info['uid'])) {
-			$this->error(403, '登录失败');
+
+		if (!$redis->setex($key, 120, $uuid)) {
+			$this->error(403, '登录失败[内部错误]');
 		}
 
 		return ['status' => 1];
@@ -547,7 +608,7 @@ class AccountApi extends API {
 			if (!$rst) {
 				$this->error($error);
 			}
-			$expire = App::icfgn('expire@passport', 315360000);
+			$expire = App::icfgn('expire@passport', 3650) * 86400;
 			$redis  = RedisClient::getRedis(App::icfg('redisdb@passport', 10));
 			$info   = json_encode($info);
 			if ($expire) {
@@ -673,6 +734,11 @@ class AccountApi extends API {
 			if (!$info) {
 				$this->error(404, '登录过期');
 			}
+			//账户在其它同类型设备登录
+			if ($info == 'oc') {
+				$redis->del($token);
+				$this->unauthorized();
+			}
 			$info = @json_decode($info, true);
 			if (!$info) {
 				$redis->del($token);
@@ -709,7 +775,7 @@ class AccountApi extends API {
 				if ($meta) {
 					$info = array_merge($info, $meta);
 				}
-				$expire = App::icfgn('expire@passport', 315360000);
+				$expire = App::icfgn('expire@passport', 3650) * 86400;
 				$infox  = json_encode($info);
 				if ($expire) {
 					$rtn = $redis->setex($token, $expire, $infox);
@@ -789,7 +855,7 @@ class AccountApi extends API {
 			$this->error(405, '更新数据库失败');
 		}
 		$info['avatar'] = the_media_src($dest['url']);
-		$expire         = App::icfgn('expire@passport', 315360000);
+		$expire         = App::icfgn('expire@passport', 3650) * 86400;
 		$infox          = json_encode($info);
 		$redis          = RedisClient::getRedis(App::icfg('redisdb@passport', 10));
 		if ($expire) {
@@ -901,8 +967,11 @@ class AccountApi extends API {
 					$tokens = $db->select('token')->from('{oauth_session}')->where($where)->toArray('token');
 					if ($tokens) {
 						$redis = self::redis();
-						$redis->del($tokens);
-						$db->delete()->from('{oauth_session}')->where($where)->exec();
+						foreach ($tokens as $t) {
+							//将token设为oc表示账户在其它设备登录了
+							$redis->setex($t, 3600, 'oc');
+						}
+						$db->update('{oauth_session}')->set(['expiration' => time()])->where(['token IN' => $tokens])->exec();
 					}
 				}
 			}
