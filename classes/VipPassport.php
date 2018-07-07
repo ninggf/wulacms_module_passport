@@ -65,8 +65,14 @@ class VipPassport extends Passport {
 
 			return false;
 		}
+		//封号
+		if ($user['status'] == 0) {
+			$this->error = '账号已被禁用,联系客服';
+
+			return false;
+		}
 		$needBind = App::bcfg('need_bind@passport');
-		if ($needBind && empty($info['phone'])) {
+		if ($needBind && empty($user['phone'])) {
 			$user['status'] = 2;//需要绑定手机
 		}
 		$user = apply_filter('passport\onLogined', $user, $user);
@@ -75,15 +81,10 @@ class VipPassport extends Passport {
 
 			return false;
 		}
-		//封号
-		if($user['status']==0){
-			$this->error = '账号已被禁用,联系客服';
 
-			return false;
-		}
 		$this->uid               = $user['id'];
 		$this->username          = $user['username'];
-		$this->nickname          = $user['nickname']?$user['nickname']:substr_replace($user['phone'], '****', 3, 4);
+		$this->nickname          = $user['nickname'] ? $user['nickname'] : substr_replace($user['phone'], '****', 3, 4);
 		$this->phone             = $user['phone'];
 		$this->email             = $user['email'];
 		$this->avatar            = $user['avatar'] ? $user['avatar'] : 'images/touxiang.png';
@@ -96,7 +97,8 @@ class VipPassport extends Passport {
 	}
 
 	public function store() {
-		fire('passport\onVipPassportLogin',$this);
+		fire('passport\onVipPassportLogin', $this);
+
 		return parent::store();
 	}
 }

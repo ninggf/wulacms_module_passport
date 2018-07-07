@@ -14,7 +14,7 @@ use wulaphp\db\Table;
 
 class OauthTable extends Table {
 
-	public function forceLogout($token) {
+	public function forceLogout($token,$web=false) {
 		$where['token'] = $token;
 
 		try {
@@ -22,7 +22,12 @@ class OauthTable extends Table {
 			if (!$rst) {
 				return false;
 			}
-			fire('passport\onForceLogout', [$token]);
+			if($web){
+				fire('passport\webForceLogout', [$token]);
+			}else{
+				fire('passport\onForceLogout', [$token]);
+			}
+
 
 			return true;
 		} catch (\Exception $e) {

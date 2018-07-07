@@ -118,6 +118,26 @@ class SettingForm extends FormTable {
 	 * @note   登录TOKEN存储在redis的哪个库
 	 */
 	public $redisdb = 10;
+
+	/**
+	 *
+	 * @var \backend\form\TextField
+	 * @type int
+	 * @digits
+	 * @range (0,15)
+	 * @layout 46,col-xs-4
+	 * @note   网站登录session_id存储在redis的哪个库
+	 */
+	public $sessiondb = 14;
+
+	/**
+	 *
+	 * @var \backend\form\TextField
+	 * @type string
+	 * @layout 46,col-xs-4
+	 * @note   网站登录session_id存储前缀
+	 */
+	public $session_prefix ;
 	/**
 	 * 黑名单(一行一个IP)
 	 * @var \backend\form\TextareaField

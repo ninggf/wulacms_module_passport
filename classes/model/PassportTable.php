@@ -258,12 +258,12 @@ class PassportTable extends Table {
 	 * 获取用户登录token.
 	 *
 	 * @param string|array       $ids  通行证编号
-	 * @param string             $type 登录类型
+	 * @param array              $type 登录类型
 	 * @param DatabaseConnection $db   数据库连接.
 	 *
 	 * @return array
 	 */
-	public function getToken($ids, $type = '', $db = null) {
+	public function getToken($ids, $type = [], $db = null) {
 		if (!$db) {
 			$db = $this->dbconnection;
 		}
@@ -272,7 +272,7 @@ class PassportTable extends Table {
 		}
 		$where['OA.passport_id IN'] = $ids;
 		if ($type) {
-			$where['type'] = $type;
+			$where['OA.type IN'] = $type;
 		}
 		$sql = $db->select('token');
 		$sql->from('{oauth} AS OA');

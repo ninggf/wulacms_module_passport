@@ -169,6 +169,17 @@ class PassportModule extends CmfModule {
 	}
 
 	/**
+	 * 强制退出。
+	 *
+	 * @param array $tokens
+	 *
+	 * @bind passport\onWebForceLogout
+	 */
+	public static function webForceLogout($tokens) {
+		AccountApi::forceLogout($tokens,true);
+	}
+
+	/**
 	 * @param Passport $passport
 	 *
 	 * @filter passport\newVipPassport

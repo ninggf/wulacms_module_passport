@@ -42,5 +42,4 @@ class SimpleOauth extends BaseOauth {
 	public function getDesc() {
 		return 'putong';
 	}
-
 }

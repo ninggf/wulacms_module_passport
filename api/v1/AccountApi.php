@@ -870,14 +870,19 @@ class AccountApi extends API {
 	/**
 	 * 创建登录会话.
 	 *
-	 * @param int|string $oauthId  第三方
-	 * @param string     $device   设备
-	 * @param array      $passport 通行证
+	 * @param int|string $oauthId    第三方
+	 * @param string     $device     设备
+	 * @param array      $passport   通行证
+	 * @param string     $session_id 会话ID
 	 *
 	 * @return string
 	 */
-	public static function createSession($oauthId, $device, $passport) {
-		$token                  = md5(uniqid() . $device . $passport['id']);
+	public static function createSession($oauthId, $device, $passport, $session_id = '') {
+		if ($session_id) {
+			$token = $session_id;
+		} else {
+			$token = md5(uniqid() . $device . $passport['id']);
+		}
 		$expire                 = App::icfgn('expire@passport', 3650) * 86400;
 		$session['ip']          = Request::getIp();
 		$session['create_time'] = time();
@@ -888,7 +893,7 @@ class AccountApi extends API {
 		$session['passport_id'] = $passport['id'];
 		try {
 			$db  = App::db();
-			$rst = $db->trans(function (DatabaseConnection $dbx) use ($session, $passport, $expire, $oauthId) {
+			$rst = $db->trans(function (DatabaseConnection $dbx) use ($session, $passport, $expire, $oauthId, $session_id) {
 				$oauthMeta = $dbx->select('name,value')->from('{oauth_meta}')->where(['oauth_id' => $oauthId])->toArray('value', 'name');
 				if ($oauthMeta) {
 					$info = $oauthMeta;
@@ -934,17 +939,21 @@ class AccountApi extends API {
 				if (!$rtn) {
 					return false;
 				}
-				$redis = self::redis();
-				$meta  = $dbx->select('name,value')->from('{passport_meta}')->where(['passport_id' => $info['uid']])->toArray('value', 'name');
-				if ($meta) {
-					$info = array_merge($meta, $info);
+				if (!$session_id) {
+					$redis = self::redis();
+					$meta  = $dbx->select('name,value')->from('{passport_meta}')->where(['passport_id' => $info['uid']])->toArray('value', 'name');
+					if ($meta) {
+						$info = array_merge($meta, $info);
+					}
+					$info = json_encode($info);
+					if ($expire) {
+						return $redis->setex($session['token'], $expire, $info);
+					} else {
+						return $redis->set($session['token'], $info);
+					}
 				}
-				$info = json_encode($info);
-				if ($expire) {
-					return $redis->setex($session['token'], $expire, $info);
-				} else {
-					return $redis->set($session['token'], $info);
-				}
+
+				return true;
 			}, $error);
 
 			if (!$rst) {
@@ -952,7 +961,7 @@ class AccountApi extends API {
 
 				return false;
 			}
-			if (!App::bcfg('sameapp@passport', false)) {
+			if (!$session_id && !App::bcfg('sameapp@passport', false)) {
 				//如果不允许同端登录
 				$where['token <>']    = $token;
 				$where['passport_id'] = $passport['id'];
@@ -986,13 +995,22 @@ class AccountApi extends API {
 	 * 强制退出.
 	 *
 	 * @param array $tokens
+	 * @param bool  $type
 	 *
+	 * @throws
 	 * @return bool
 	 */
-	public static function forceLogout($tokens) {
+	public static function forceLogout($tokens, $type = false) {
 		if ($tokens) {
 			try {
-				$redis = self::redis();
+				if ($type) {
+					$redis = self::sessiondb();
+					foreach ($tokens as $k => $v) {
+						$tokens[ $k ] = self::sdbPrefix() . $v;
+					}
+				} else {
+					$redis = self::redis();
+				}
 				$redis->del((array)$tokens);
 				$db = App::db();
 				$db->update('{oauth_session}')->set(['expiration' => time()])->where(['token IN' => (array)$tokens])->exec();
@@ -1016,5 +1034,29 @@ class AccountApi extends API {
 		$redis = RedisClient::getRedis(App::icfg('redisdb@passport', 10));
 
 		return $redis;
+	}
+
+	/**
+	 * 获取网站session_id使用的redis实例.
+	 *
+	 * @return \Redis
+	 * @throws \Exception
+	 */
+	public static function sessiondb() {
+		$redis = RedisClient::getRedis(App::icfg('sessiondb@passport', 14));
+
+		return $redis;
+	}
+
+	/**
+	 * 获取网站session_id使用的redis实例前缀.
+	 *
+	 * @return string
+	 * @throws \Exception
+	 */
+	public static function sdbPrefix() {
+		$prefix = App::cfg('session_prefix@passport', 'PHPREDIS_SESSION');
+
+		return $prefix;
 	}
 }

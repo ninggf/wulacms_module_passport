@@ -47,9 +47,15 @@ class IndexController extends IFramePageController {
 				$table->db()->update('{passport}')->set(['status' => $status])->where(['id IN' => $ids])->exec();
 				fire('passport\onChangeStatus', $ids);
 				if (!$status) {
-					$tokens = $table->getToken($ids);
+					//删除APP端
+					$tokens = $table->getToken($ids,['phone','wechat']);
 					if ($tokens) {
 						fire('passport\onForceLogout', $tokens);
+					}
+					//删除pc端
+					$tokens = $table->getToken($ids,['phone','webwechat']);
+					if ($tokens) {
+						fire('passport\onWebForceLogout', $tokens);
 					}
 					Syslog::info('禁用用户:' . implode(',', $ids), $this->passport->uid, 'passport');
 				} else {

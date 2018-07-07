@@ -34,19 +34,23 @@ class AuthController extends Controller {
 	public function index($type, $callback = '') {
 		if ($type == 'info.do') {
 			$utoken = $_COOKIE['utoken'];
-			if ($utoken) {
+			if ($utoken && !$this->passport->isLogin) {
 				$arr       = explode(':', $utoken);
 				$uid       = base_convert($arr[1], 36, 10);
-				$pass_info = App::db()->select('id,nickname,avatar,passwd,phone')->from('{passport}')->where(['id' => $uid])->get();
+				$pass_info = App::db()->select('id,nickname,avatar,passwd,phone,status')->from('{passport}')->where(['id' => $uid])->get();
 				if ($pass_info['passwd']) {
 					$agent = $_SERVER['HTTP_USER_AGENT'];
 					$hash  = md5($uid . $pass_info['passwd'] . $agent) . ':' . base_convert($uid, 10, 36);
-					if ($hash == $utoken) {
+					if (($hash == $utoken) && ($pass_info['status'] == 1)) {
 						$this->passport->isLogin  = true;
 						$this->passport->uid      = $pass_info['id'];
 						$this->passport->phone    = $pass_info['phone'];
 						$this->passport->nickname = $pass_info['nickname'] ? $pass_info['nickname'] : substr_replace($pass_info['phone'], '****', 3, 4);
 						$this->passport->avatar   = $pass_info['avatar'] ? $pass_info['avatar'] : 'images/touxiang.png';
+						$this->passport->store();
+					} else {
+						$this->passport->isLogin = false;
+						$this->passport->uid     = '';
 						$this->passport->store();
 					}
 				}
@@ -93,16 +97,25 @@ class AuthController extends Controller {
 		$data['account'] = $account;
 		$data['passwd']  = $passwd;
 		if ($this->passport->login($data)) {
+			//获取手机号对应的账户
+			$db       = App::db();
+			$passport = $db->select('PS.*,OA.id AS oauth_id')->from('{oauth} AS OA')->left('{passport} AS PS', 'passport_id', 'PS.id')->where([
+				'type'    => 'phone',
+				'open_id' => $account
+			])->get();
 			if ($auto_login) {
 				$uid   = $this->passport->uid;
 				$agent = $_SERVER['HTTP_USER_AGENT'];
-				$pass  = App::db()->select('passwd')->from('{passport}')->where(['id' => $uid])->get('passwd');
+				$pass  = $passport['passwd'];
 				$hash  = md5($uid . $pass . $agent) . ':' . base_convert($uid, 10, 36);
 				Response::cookie('utoken', $hash, 86400 * 30);
+
 			} else {
 				Response::cookie('utoken');
 			}
 			fire('passport\bindPhone', $this->passport->uid);
+			//创建登录信息
+			AccountApi::createSession($passport['oauth_id'], 'web', $passport, session_id());
 
 			return $this->passport->info();
 		} else {

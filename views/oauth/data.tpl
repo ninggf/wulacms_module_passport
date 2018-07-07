@@ -32,7 +32,7 @@
         <td class="text-right">
             <div class="btn-group">
                 {if $row.login_time && $row.expiration > $ctime}
-                    <a href="{'passport/oauth/logout'|app}?token={$row.token}" data-ajax data-confirm="真的要强退退出吗?"
+                    <a href="{'passport/oauth/logout'|app}?token={$row.token}&type={$row.device}" data-ajax data-confirm="真的要强退退出吗?"
                        class="btn btn-xs btn-danger" title="强制退出">
                         <i class="fa fa-sign-out"></i>
                     </a>

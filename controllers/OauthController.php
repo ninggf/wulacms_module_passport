@@ -83,8 +83,8 @@ class OauthController extends IFramePageController {
 	 */
 	public function view($id) {
 		$data['OA.passport_id'] = $id;
-		$table               = new OauthTable();
-		$sql                 = $table->alias('OA')->select('OA.*,OS.ip,OS.token,OS.expiration');
+		$table                  = new OauthTable();
+		$sql                    = $table->alias('OA')->select('OA.*,OS.ip,OS.token,OS.expiration');
 		$sql->join('{oauth_session} AS OS', 'OA.id = OS.oauth_id AND OA.login_time = OS.create_time AND OA.device = OS.device');
 		$sql->asc('OA.id')->where($data);
 		$data['rows']  = $sql->toArray();
@@ -97,12 +97,14 @@ class OauthController extends IFramePageController {
 	 * 强制退出.
 	 *
 	 * @param string $token
+	 * @param string $type 类型
 	 *
 	 * @return \wulaphp\mvc\view\JsonView
 	 */
-	public function logout($token) {
+	public function logout($token, $type = '') {
 		$table = new OauthTable();
-		$table->forceLogout($token);
+		$web   = $type && preg_match('/^web.*/', $type);
+		$table->forceLogout($token, $web);
 
 		return Ajax::reload('document', '用户已被强制退出');
 	}
