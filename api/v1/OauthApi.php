@@ -111,11 +111,7 @@ class OauthApi extends API {
 		//第三方登录校验
 		/**@var \passport\classes\IOauth $oapp */
 		$oapp    = $oauthApp['oauth'];
-		$checked = $oapp->check([
-			'openid'  => $openid,
-			'unionid' => $unionid,
-			'meta'    => $meta
-		]);
+		$checked = $oapp->check(['openid' => $openid, 'unionid' => $unionid, 'meta' => $meta]);
 
 		if (!$checked) {
 			$this->error(407, '非法的第三方登录');
@@ -126,10 +122,7 @@ class OauthApi extends API {
 			//通过unionid查找用户
 			$passport_id = self::getPassportId($unionid);
 			//第三方数据
-			$oauth = $dbx->select('passport_id,id,union_id')->from('{oauth}')->where([
-				'type'    => $type,
-				'open_id' => $openid
-			])->get();
+			$oauth = $dbx->select('passport_id,id,union_id')->from('{oauth}')->where(['type' => $type, 'open_id' => $openid])->get();
 			//没有第三方数据
 			if (!$oauth) {
 				$oauth['passport_id'] = $passport_id;
@@ -145,27 +138,21 @@ class OauthApi extends API {
 					throw_exception('无法创建第三方登录信息');
 				}
 			} else if (!$oauth['passport_id'] && $passport_id) {
-				$rst = $dbx->update('{oauth}')->set([
-					'passport_id' => $passport_id,
-					'union_id'    => $unionid,
-					'update_time' => time()
-				])->where(['id' => $oauth['id']])->exec();
+				$rst = $dbx->update('{oauth}')->set(['passport_id' => $passport_id, 'union_id' => $unionid, 'update_time' => time()])->where(['id' => $oauth['id']])->exec();
 				if (!$rst) {
 					throw_exception('更新登录数据失败');
 				}
 				$oauth['passport_id'] = $passport_id;
 				$oauth['union_id']    = $unionid;
 			} else {
-				$rst = $dbx->update('{oauth}')->set([
-					'update_time' => time(),
-					'union_id'    => $unionid
-				])->where(['id' => $oauth['id']])->exec();
+				$rst = $dbx->update('{oauth}')->set(['update_time' => time(), 'union_id' => $unionid])->where(['id' => $oauth['id']])->exec();
 				if (!$rst) {
 					throw_exception('更新登录数据失败');
 				}
 			}
 			//创建通行证
 			if (!$oauth['passport_id']) {
+
 				$needRecCode = App::bcfg('need_rec@passport');
 				if ($needRecCode && empty($code)) {
 					throw_exception('800@请填写推荐码');
@@ -178,16 +165,31 @@ class OauthApi extends API {
 					$pa['channel'] = $channel;
 				}
 				$pa['nickname'] = '';
+				//$recCode 放师父id
 				if ($recCode) {
 					$pa['recom'] = $recCode;
 				}
 				$pa['status'] = 1;
 				$pa['ip']     = Request::getIp();
-
+				$ds_arr       = [];
+				if (isset($meta['recCode'])) {
+					$parent = (int)$meta['recCode'];
+					unset($meta['recCode']);
+					if (preg_match('/28ds/i', $channel)) {
+						$ds_arr['mid']     = $parent;
+						$ds_arr['channel'] = $channel;
+					} else {
+						$pa['parent'] = $parent;
+					}
+				}
 				$table = new PassportTable();
 				$pid   = $table->addPassport($pa);
 				if ($pid && $dbx->update('{oauth}')->set(['passport_id' => $pid])->where(['id' => $oauth['id']])->exec()) {
 					$oauth['passport_id'] = $pid;
+					//28奖励
+					if ($ds_arr['mid']) {
+						fire('passport\onPassportCreated28', $pid, $ds_arr);
+					}
 				} else {
 					throw_exception('更新登录数据失败[2]');
 				}
@@ -208,10 +210,7 @@ class OauthApi extends API {
 		if (!$uid) {
 			$this->error($errors);
 		}
-		$passport = $db->select('PS.*,OA.id AS oauth_id')->from('{oauth} AS OA')->left('{passport} AS PS', 'passport_id', 'PS.id')->where([
-			'type'    => $type,
-			'open_id' => $openid
-		])->get();
+		$passport = $db->select('PS.*,OA.id AS oauth_id')->from('{oauth} AS OA')->left('{passport} AS PS', 'passport_id', 'PS.id')->where(['type' => $type, 'open_id' => $openid])->get();
 
 		if (!$passport) {
 			$this->error(602, '登录失败');
@@ -287,11 +286,7 @@ class OauthApi extends API {
 		}
 		$oauthApp = $apps[ $type ];
 		//第三方登录校验
-		$checked = $oauthApp->check([
-			'openid'  => $openid,
-			'unionid' => $unionid,
-			'meta'    => $meta
-		]);
+		$checked = $oauthApp->check(['openid' => $openid, 'unionid' => $unionid, 'meta' => $meta]);
 
 		if (!$checked) {
 			$this->error(407, '非法的第三方登录');
@@ -299,10 +294,7 @@ class OauthApi extends API {
 		$meta = is_array($meta) ? $meta : [];
 		$db   = App::db();
 		$rst  = $db->trans(function (DatabaseConnection $dbx) use ($type, $openid, $unionid, $device, $info, $meta, $force) {
-			$oauth = $dbx->select('passport_id,id')->from('{oauth}')->where([
-				'type'    => $type,
-				'open_id' => $openid
-			])->get();
+			$oauth = $dbx->select('passport_id,id')->from('{oauth}')->where(['type' => $type, 'open_id' => $openid])->get();
 			if ($oauth) {
 				if ($oauth['passport_id'] == $info['uid']) {
 					throw_exception('603@已经绑定过了，请不要重复绑定');
@@ -355,9 +347,7 @@ class OauthApi extends API {
 		if ($unionid) {
 			try {
 				$db  = App::db();
-				$uid = $db->select('passport_id')->from('{oauth}')->where([
-					'union_id' => $unionid
-				])->get('passport_id');
+				$uid = $db->select('passport_id')->from('{oauth}')->where(['union_id' => $unionid])->get('passport_id');
 
 				return intval($uid);
 			} catch (\Exception $e) {

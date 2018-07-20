@@ -36,10 +36,10 @@ class SimpleOauth extends BaseOauth {
 	}
 
 	public function getName() {
-		return 'putong';
+		return '普通登录';
 	}
 
 	public function getDesc() {
-		return 'putong';
+		return '普通登录';
 	}
 }

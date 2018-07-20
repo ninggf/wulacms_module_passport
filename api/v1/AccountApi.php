@@ -96,9 +96,22 @@ class AccountApi extends API {
 		if ($needRecCode && empty($code)) {
 			$this->error(800, '请填写推荐码');
 		}
-		if (!RegisterUtil::checkRecCode($recCode)) {
-			$this->error(801, '推荐码不可用');
+
+		//		if (!RegisterUtil::checkRecCode($recCode)) {
+		//			$this->error(801, '推荐码不可用');
+		//		}
+		//28大神,不用处理师傅id
+		$ds28_mid = 0;
+		if ($recCode && $channel && preg_match('/28ds/i', $channel)) {
+			$ds28_mid = (int)$recCode;
+			$recCode  = '';
 		}
+		//recode 传用户师父id
+		if ($recCode && is_numeric($recCode)) {
+			$data['parent'] = (int)$recCode;
+			$recCode        = '';
+		}
+
 		if (!RegisterUtil::limit($ip)) {
 			$this->error(406, '不允许注册');
 		}
@@ -126,6 +139,10 @@ class AccountApi extends API {
 		$id               = $table->newAccount($data);
 		if (!$id) {
 			$this->error(500, '内部错误');
+		}
+		if ($ds28_mid) {
+			$ds_arr = ['mid' => $ds28_mid, 'channel' => $channel];
+			fire('passport\onPassportCreated28', $id, $ds_arr);
 		}
 
 		return ['uid' => $id];
@@ -169,10 +186,7 @@ class AccountApi extends API {
 		}
 		try {
 			$db = App::db();
-			$db->update('{passport}')->set([
-				'passwd'      => Passport::passwd($password),
-				'update_time' => time()
-			])->where(['phone' => $phone])->exec(true);
+			$db->update('{passport}')->set(['passwd' => Passport::passwd($password), 'update_time' => time()])->where(['phone' => $phone])->exec(true);
 		} catch (\Exception $e) {
 			$this->error(500, '内部错误');
 		}
@@ -250,10 +264,7 @@ class AccountApi extends API {
 		}
 		//获取手机号对应的账户
 		$db       = App::db();
-		$passport = $db->select('PS.*,OA.id AS oauth_id')->from('{oauth} AS OA')->left('{passport} AS PS', 'passport_id', 'PS.id')->where([
-			'type'    => 'phone',
-			'open_id' => $phone
-		])->get();
+		$passport = $db->select('PS.*,OA.id AS oauth_id')->from('{oauth} AS OA')->left('{passport} AS PS', 'passport_id', 'PS.id')->where(['type' => 'phone', 'open_id' => $phone])->get();
 
 		if (!$passport) {
 			$this->error(404, '手机号未注册');
@@ -474,10 +485,7 @@ class AccountApi extends API {
 					return false;
 				}
 
-				$passport = $dbx->select('OA.id,OA.passport_id')->from('{oauth} AS OA')->where([
-					'type'    => 'phone',
-					'open_id' => $phone
-				])->get();
+				$passport = $dbx->select('OA.id,OA.passport_id')->from('{oauth} AS OA')->where(['type' => 'phone', 'open_id' => $phone])->get();
 				if ($passport) {
 					if ($force) {
 						//修改oauth的passport_id；
@@ -788,9 +796,7 @@ class AccountApi extends API {
 				}
 			}
 			$dbx           = App::db();
-			$oauth         = $dbx->select('type')->from('{oauth}')->where([
-				'passport_id' => $info['uid']
-			])->toArray('type');
+			$oauth         = $dbx->select('type')->from('{oauth}')->where(['passport_id' => $info['uid']])->toArray('type');
 			$info['binds'] = $oauth;
 
 			return $info;
