@@ -1,2 +1,5 @@
-# wulacms_module_passport
-passport module for wulacms
+## 通行证
+
+管理用户注册，登录，第三方登录.
+
+### 事件

@@ -17,6 +17,7 @@ use wulaphp\auth\PassportSupport;
 use wulaphp\io\Response;
 use wulaphp\mvc\controller\Controller;
 use wulaphp\mvc\controller\SessionSupport;
+use wulaphp\mvc\view\JsView;
 
 class AuthController extends Controller {
 	use SessionSupport, PassportSupport;
@@ -58,6 +59,7 @@ class AuthController extends Controller {
 			}
 			$info = $this->passport->info();
 			unset($info['phone'], $info['email']);
+			$info['token'] = session_id();
 			if ($callback) {
 				$info = $callback . '(' . json_encode($info) . ')';
 				header('Content-type: application/javascript; charset=UTF-8');
@@ -70,6 +72,47 @@ class AuthController extends Controller {
 		Response::respond(404);
 
 		return null;
+	}
+
+	/**
+	 * 单点登录
+	 *
+	 * @param string $callback
+	 *
+	 * @return \wulaphp\mvc\view\View
+	 */
+	public function sso($callback = '') {
+		if (!$this->passport->isLogin) {
+			$rst = apply_filter('passport\onSso', $this->passport);
+			if ($rst && $this->passport->isLogin) {
+				if ($callback) {
+					header('Content-type: application/javascript; charset=UTF-8');
+					$info = $callback . '(true)';
+					echo $info;
+					exit();
+				} else {
+					return new JsView('//1');
+				}
+			} else {
+				if ($callback) {
+					header('Content-type: application/javascript; charset=UTF-8');
+					$info = $callback . '(false)';
+					echo $info;
+					exit();
+				} else {
+					return new JsView('//0');
+				}
+			}
+		}
+
+		if ($callback) {
+			header('Content-type: application/javascript; charset=UTF-8');
+			$info = $callback . '(true)';
+			echo $info;
+			exit();
+		} else {
+			return new JsView('//1');
+		}
 	}
 
 	/**

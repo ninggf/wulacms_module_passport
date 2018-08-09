@@ -48,12 +48,12 @@ class IndexController extends IFramePageController {
 				fire('passport\onChangeStatus', $ids);
 				if (!$status) {
 					//删除APP端
-					$tokens = $table->getToken($ids,['phone','wechat']);
+					$tokens = $table->getToken($ids, ['phone', 'wechat', 'qq']);
 					if ($tokens) {
 						fire('passport\onForceLogout', $tokens);
 					}
 					//删除pc端
-					$tokens = $table->getToken($ids,['phone','webwechat']);
+					$tokens = $table->getToken($ids, ['phone', 'webwechat', 'webqq']);
 					if ($tokens) {
 						fire('passport\onWebForceLogout', $tokens);
 					}
