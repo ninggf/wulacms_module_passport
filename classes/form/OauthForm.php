@@ -50,7 +50,7 @@ class OauthForm extends FormTable {
 	 */
 	public $android = 1;
 	/**
-	 * 安卓平板
+	 * 平板
 	 * @var \backend\form\CheckboxField
 	 * @type bool
 	 * @layout 3,col-xs-3
