@@ -32,4 +32,6 @@ interface IOauth {
 	 * @return \wulaphp\form\FormTable
 	 */
 	public function getForm();
+
+	public function getOauthData();
 }

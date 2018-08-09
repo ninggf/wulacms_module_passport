@@ -40,6 +40,6 @@ class SimpleOauth extends BaseOauth {
 	}
 
 	public function getDesc() {
-		return '普通登录';
+		return '用户名密码方式登录';
 	}
 }

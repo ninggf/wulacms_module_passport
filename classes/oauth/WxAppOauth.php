@@ -13,20 +13,25 @@ namespace passport\classes\oauth;
 use passport\classes\BaseOauth;
 use passport\classes\form\WxSetForm;
 
-class WechatOauth extends BaseOauth {
+class WxAppOauth extends BaseOauth {
 	public function check($data) {
 		return true;
 	}
 
 	public function getName() {
-		return '微信';
+		return '小程序';
 	}
 
 	public function getDesc() {
-		return '手机端微信登录';
+		return '微信小程序登录';
 	}
 
 	public function getForm() {
 		return new WxSetForm(true);
+	}
+
+	public function getOauthData() {
+
+		return [];
 	}
 }

@@ -17,4 +17,8 @@ abstract class BaseOauth implements IOauth {
 	public function getForm() {
 		return null;
 	}
+
+	public function getOauthData() {
+		return [];
+	}
 }

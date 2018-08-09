@@ -30,14 +30,14 @@ class OauthApi extends API {
 	 *
 	 * @apiName 登录
 	 *
-	 * @param string  $type    (required) 第三方类型
-	 * @param string  $openid  (required) OPEN ID
-	 * @param string  $device  (required) 设备
-	 * @param  string $cid     (required) 终端编号
-	 * @param string  $unionid UNION ID
-	 * @param string  $recCode 推荐码
-	 * @param string  $channel 渠道
-	 * @param object  $meta    (sample={"avatar":"...","gender":"","nickname":""}) 第三方提供的额外数据
+	 * @param string $type    (required) 第三方类型
+	 * @param string $openid  (required) OPEN ID
+	 * @param string $device  (required) 设备
+	 * @param string $cid     (required) 终端编号
+	 * @param string $unionid UNION ID
+	 * @param string $recCode 推荐码
+	 * @param string $channel 渠道
+	 * @param array  $meta    (sample={"avatar":"...","gender":"","nickname":""}) 第三方提供的额外数据
 	 *
 	 * @paramo  int uid 用户ID
 	 * @paramo  string token TOKEN
@@ -76,7 +76,7 @@ class OauthApi extends API {
 	 * }
 	 * @throws
 	 */
-	public function login($type, $openid, $device, $cid, $unionid = '', $recCode = '', $channel = '', $meta = null) {
+	public function login(string $type, string $openid, string $device, string $cid, string $unionid = '', string $recCode = '', string $channel = '', array $meta = null) {
 
 		if (empty($openid)) {
 			$this->error(601, 'OPENID为空');
@@ -116,13 +116,23 @@ class OauthApi extends API {
 		if (!$checked) {
 			$this->error(407, '非法的第三方登录');
 		}
+		// 从第三方获取用户信息
+		$oauthData = $oapp->getOauthData();
+		if ($meta) {
+			$meta = array_merge($meta, $oauthData);
+		} else {
+			$meta = $oauthData;
+		}
 		$meta = is_array($meta) ? $meta : [];
 		$db   = App::db();
 		$uid  = $db->trans(function (DatabaseConnection $dbx) use ($openid, $device, $type, $unionid, $channel, $recCode, $meta) {
 			//通过unionid查找用户
 			$passport_id = self::getPassportId($unionid);
 			//第三方数据
-			$oauth = $dbx->select('passport_id,id,union_id')->from('{oauth}')->where(['type' => $type, 'open_id' => $openid])->get();
+			$oauth = $dbx->select('passport_id,id,union_id')->from('{oauth}')->where([
+				'type'    => $type,
+				'open_id' => $openid
+			])->get();
 			//没有第三方数据
 			if (!$oauth) {
 				$oauth['passport_id'] = $passport_id;
@@ -138,14 +148,21 @@ class OauthApi extends API {
 					throw_exception('无法创建第三方登录信息');
 				}
 			} else if (!$oauth['passport_id'] && $passport_id) {
-				$rst = $dbx->update('{oauth}')->set(['passport_id' => $passport_id, 'union_id' => $unionid, 'update_time' => time()])->where(['id' => $oauth['id']])->exec();
+				$rst = $dbx->update('{oauth}')->set([
+					'passport_id' => $passport_id,
+					'union_id'    => $unionid,
+					'update_time' => time()
+				])->where(['id' => $oauth['id']])->exec();
 				if (!$rst) {
 					throw_exception('更新登录数据失败');
 				}
 				$oauth['passport_id'] = $passport_id;
 				$oauth['union_id']    = $unionid;
 			} else {
-				$rst = $dbx->update('{oauth}')->set(['update_time' => time(), 'union_id' => $unionid])->where(['id' => $oauth['id']])->exec();
+				$rst = $dbx->update('{oauth}')->set([
+					'update_time' => time(),
+					'union_id'    => $unionid
+				])->where(['id' => $oauth['id']])->exec();
 				if (!$rst) {
 					throw_exception('更新登录数据失败');
 				}
@@ -210,7 +227,10 @@ class OauthApi extends API {
 		if (!$uid) {
 			$this->error($errors);
 		}
-		$passport = $db->select('PS.*,OA.id AS oauth_id')->from('{oauth} AS OA')->left('{passport} AS PS', 'passport_id', 'PS.id')->where(['type' => $type, 'open_id' => $openid])->get();
+		$passport = $db->select('PS.*,OA.id AS oauth_id')->from('{oauth} AS OA')->left('{passport} AS PS', 'passport_id', 'PS.id')->where([
+			'type'    => $type,
+			'open_id' => $openid
+		])->get();
 
 		if (!$passport) {
 			$this->error(602, '登录失败');
@@ -294,7 +314,10 @@ class OauthApi extends API {
 		$meta = is_array($meta) ? $meta : [];
 		$db   = App::db();
 		$rst  = $db->trans(function (DatabaseConnection $dbx) use ($type, $openid, $unionid, $device, $info, $meta, $force) {
-			$oauth = $dbx->select('passport_id,id')->from('{oauth}')->where(['type' => $type, 'open_id' => $openid])->get();
+			$oauth = $dbx->select('passport_id,id')->from('{oauth}')->where([
+				'type'    => $type,
+				'open_id' => $openid
+			])->get();
 			if ($oauth) {
 				if ($oauth['passport_id'] == $info['uid']) {
 					throw_exception('603@已经绑定过了，请不要重复绑定');

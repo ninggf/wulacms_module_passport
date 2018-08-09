@@ -57,20 +57,6 @@ class OauthForm extends FormTable {
 	 */
 	public $pad = 0;
 	/**
-	 * 微信小程序
-	 * @var \backend\form\CheckboxField
-	 * @type bool
-	 * @layout 3,col-xs-3
-	 */
-	public $wxapp = 0;
-	/**
-	 * 微信小游戏
-	 * @var \backend\form\CheckboxField
-	 * @type bool
-	 * @layout 3,col-xs-3
-	 */
-	public $wxgame = 0;
-	/**
 	 * WEB
 	 * @var \backend\form\CheckboxField
 	 * @type bool
@@ -90,5 +76,5 @@ class OauthForm extends FormTable {
 	 * @type bool
 	 * @layout 4,col-xs-3
 	 */
-	public $h5 = 0;
+	public $h5 = 1;
 }

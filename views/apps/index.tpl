@@ -14,8 +14,6 @@
                 <th width="60" data-sort="web,d">WEB</th>
                 <th width="60" data-sort="pc,d">PC</th>
                 <th width="60" data-sort="h5,d">H5</th>
-                <th width="70" data-sort="wxgame,d">小游戏</th>
-                <th width="70" data-sort="wxapp,d">小程序</th>
                 <th width="60"></th>
             </tr>
             </thead>

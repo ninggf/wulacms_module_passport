@@ -16,6 +16,7 @@ use passport\classes\oauth\SimpleOauth;
 use passport\classes\oauth\WebQqOauth;
 use passport\classes\oauth\WebWechatOauth;
 use passport\classes\oauth\WechatOauth;
+use passport\classes\oauth\WxAppOauth;
 use passport\classes\PhoneOauth;
 use wulaphp\db\Table;
 
@@ -40,7 +41,7 @@ class OauthApp extends Table {
 		$data = [];
 		if ($apps) {
 			$ids  = array_keys($apps);
-			$sql  = $this->find(['type IN' => $ids], 'type,status,ios,android,web');
+			$sql  = $this->find(['type IN' => $ids], 'type,status,ios,android,web,pc,h5,ipad,pad');
 			$list = $sql->toArray(null, 'type');
 
 			foreach ($apps as $id => $app) {
@@ -70,7 +71,8 @@ class OauthApp extends Table {
 				'wechat'    => new WechatOauth(),
 				'webqq'     => new WebQqOauth(),
 				'webwechat' => new WebWechatOauth(),
-			    'simple' => new SimpleOauth()
+				'wxapp'     => new WxAppOauth(),
+				'simple'    => new SimpleOauth()
 			]);
 		}
 

@@ -38,14 +38,6 @@
             <i class="fa fa-check text-success text-active"></i>
             <i class="fa fa-times text-danger text"></i>
         </td>
-        <td class="{if $row.wxgame}active{/if}">
-            <i class="fa fa-check text-success text-active"></i>
-            <i class="fa fa-times text-danger text"></i>
-        </td>
-        <td class="{if $row.wxapp}active{/if}">
-            <i class="fa fa-check text-success text-active"></i>
-            <i class="fa fa-times text-danger text"></i>
-        </td>
         <td class="text-center">
             <a href="{'passport/apps/cfg'|app}/{$row.id}" class="cfg-app" data-ajax="dialog"
                data-area="600px,{if $row.hasForm}400px{else}auto{/if}" title="配置[{$row.name}]">
