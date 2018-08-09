@@ -33,5 +33,5 @@ interface IOauth {
 	 */
 	public function getForm();
 
-	public function getOauthData();
+	public function getOauthData(?array $meta = null): array;
 }

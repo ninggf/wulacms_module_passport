@@ -18,7 +18,14 @@ abstract class BaseOauth implements IOauth {
 		return null;
 	}
 
-	public function getOauthData() {
-		return [];
+	/**
+	 * @param array $meta
+	 *
+	 * @return array
+	 */
+	public function getOauthData(?array $meta = null): array {
+		$meta = is_array($meta) ? $meta : [];
+
+		return $meta;
 	}
 }

@@ -116,16 +116,19 @@ class OauthApi extends API {
 		if (!$checked) {
 			$this->error(407, '非法的第三方登录');
 		}
-		// 从第三方获取用户信息
-		$oauthData = $oapp->getOauthData();
-		if ($meta) {
-			$meta = array_merge($meta, $oauthData);
-		} else {
-			$meta = $oauthData;
+		if (is_array($checked)) {
+			if (isset($checked['openid'])) {
+				$openid = $checked['openid'];
+			}
+			if (isset($checked['unionid'])) {
+				$unionid = $checked['unionid'];
+			}
 		}
-		$meta = is_array($meta) ? $meta : [];
-		$db   = App::db();
-		$uid  = $db->trans(function (DatabaseConnection $dbx) use ($openid, $device, $type, $unionid, $channel, $recCode, $meta) {
+		// 从第三方获取用户信息
+		$meta = $oapp->getOauthData($meta);
+
+		$db  = App::db();
+		$uid = $db->trans(function (DatabaseConnection $dbx) use ($openid, $device, $type, $unionid, $channel, $recCode, $meta) {
 			//通过unionid查找用户
 			$passport_id = self::getPassportId($unionid);
 			//第三方数据
