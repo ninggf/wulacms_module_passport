@@ -76,7 +76,7 @@ class OauthApi extends API {
 	 * }
 	 * @throws
 	 */
-	public function login(string $type, string $openid, string $device, string $cid, string $unionid = '', string $recCode = '', string $channel = '', array $meta = null) {
+	public function loginPost(string $type, string $openid, string $device, string $cid, string $unionid = '', string $recCode = '', string $channel = '', array $meta = null) {
 
 		if (empty($openid)) {
 			$this->error(601, 'OPENID为空');
@@ -285,7 +285,7 @@ class OauthApi extends API {
 	 *
 	 * @throws
 	 */
-	public function bind($token, $type, $openid, $device, $cid, $unionid, $force = 0, $meta = null) {
+	public function bindPost($token, $type, $openid, $device, $cid, $unionid, $force = 0, $meta = null) {
 		if (empty($token)) {
 			$this->error(403, 'TOKEN为空');
 		}
