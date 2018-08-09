@@ -41,17 +41,22 @@ class OauthApp extends Table {
 		$data = [];
 		if ($apps) {
 			$ids  = array_keys($apps);
-			$sql  = $this->find(['type IN' => $ids], 'type,status,ios,android,web,pc,h5,ipad,pad');
+			$sql  = $this->find(['type IN' => $ids], 'type,status,ios,android,web,pc,h5,ipad,pad,options');
 			$list = $sql->toArray(null, 'type');
 
 			foreach ($apps as $id => $app) {
+				$opts = @json_decode($list['options'], true);
+				if ($opts) {
+					$app->setOptions($opts);
+				}
 				$list[ $id ]['id']      = $id;
 				$list[ $id ]['type']    = $id;
 				$list[ $id ]['name']    = $app->getName();
 				$list[ $id ]['desc']    = $app->getDesc();
 				$list[ $id ]['hasForm'] = $app->getForm() ? true : false;
 				$list[ $id ]['oauth']   = $app;
-				$data[ $id ]            = $list[ $id ];
+
+				$data[ $id ] = $list[ $id ];
 			}
 		}
 
@@ -64,16 +69,7 @@ class OauthApp extends Table {
 	public static function getApps() {
 		static $apps = false;
 		if ($apps === false) {
-			$apps = apply_filter('passport\getOauthApps', [
-				'phone'     => new PhoneOauth(),
-				'email'     => new EmailOauth(),
-				'qq'        => new QqOauth(),
-				'wechat'    => new WechatOauth(),
-				'webqq'     => new WebQqOauth(),
-				'webwechat' => new WebWechatOauth(),
-				'wxapp'     => new WxAppOauth(),
-				'simple'    => new SimpleOauth()
-			]);
+			$apps = apply_filter('passport\getOauthApps', ['phone' => new PhoneOauth(), 'email' => new EmailOauth(), 'qq' => new QqOauth(), 'wechat' => new WechatOauth(), 'webqq' => new WebQqOauth(), 'webwechat' => new WebWechatOauth(), 'wxapp' => new WxAppOauth(), 'simple' => new SimpleOauth()]);
 		}
 
 		return $apps;

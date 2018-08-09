@@ -10,11 +10,24 @@
 
 namespace passport\classes;
 
+use wulaphp\form\FormTable;
+
 abstract class BaseOauth implements IOauth {
+	protected $options = [];
+
+	/**
+	 * set options
+	 *
+	 * @param array $options
+	 */
+	public function setOptions(array $options) {
+		$this->options = $options;
+	}
+
 	/**
 	 * @return \wulaphp\form\FormTable
 	 */
-	public function getForm() {
+	public function getForm(): ?FormTable {
 		return null;
 	}
 

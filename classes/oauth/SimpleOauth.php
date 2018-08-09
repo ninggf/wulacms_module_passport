@@ -31,15 +31,15 @@ namespace passport\classes\oauth;
 use passport\classes\BaseOauth;
 
 class SimpleOauth extends BaseOauth {
-	public function check($data) {
+	public function check(array $data) {
 		return true;
 	}
 
-	public function getName() {
+	public function getName(): string {
 		return '普通登录';
 	}
 
-	public function getDesc() {
+	public function getDesc(): string {
 		return '用户名密码方式登录';
 	}
 }

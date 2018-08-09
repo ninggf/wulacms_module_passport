@@ -12,21 +12,22 @@ namespace passport\classes\oauth;
 
 use passport\classes\BaseOauth;
 use passport\classes\form\WxSetForm;
+use wulaphp\form\FormTable;
 
 class WebWechatOauth extends BaseOauth {
-	public function check($data) {
+	public function check(array $data) {
 		return true;
 	}
 
-	public function getName() {
+	public function getName(): string {
 		return '网页微信';
 	}
 
-	public function getDesc() {
+	public function getDesc(): string {
 		return '网页微信登录';
 	}
 
-	public function getForm() {
+	public function getForm(): ?FormTable {
 		return new WxSetForm(true);
 	}
 }

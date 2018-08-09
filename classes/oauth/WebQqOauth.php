@@ -13,15 +13,15 @@ namespace passport\classes\oauth;
 use passport\classes\BaseOauth;
 
 class WebQqOauth extends BaseOauth {
-	public function check($data) {
+	public function check(array $data) {
 		return true;
 	}
 
-	public function getName() {
+	public function getName(): string {
 		return '网页QQ';
 	}
 
-	public function getDesc() {
+	public function getDesc(): string {
 		return '网页QQ登录';
 	}
 }

@@ -10,28 +10,32 @@
 
 namespace passport\classes;
 
+use wulaphp\form\FormTable;
+
 interface IOauth {
+	public function setOptions(array $options);
+
 	/**
 	 * @param array $data
 	 *
-	 * @return bool
+	 * @return bool|array
 	 */
-	public function check($data);
+	public function check(array $data);
 
 	/**
 	 * @return string
 	 */
-	public function getName();
+	public function getName(): string;
 
 	/**
 	 * @return string
 	 */
-	public function getDesc();
+	public function getDesc(): string;
 
 	/**
 	 * @return \wulaphp\form\FormTable
 	 */
-	public function getForm();
+	public function getForm(): ?FormTable;
 
 	public function getOauthData(?array $meta = null): array;
 }

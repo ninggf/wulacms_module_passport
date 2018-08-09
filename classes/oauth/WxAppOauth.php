@@ -10,28 +10,85 @@
 
 namespace passport\classes\oauth;
 
+use EasyWeChat\Kernel\Exceptions\DecryptException;
 use passport\classes\BaseOauth;
 use passport\classes\form\WxSetForm;
+use weixin\classes\WxAccount;
+use wulaphp\form\FormTable;
 
 class WxAppOauth extends BaseOauth {
-	public function check($data) {
-		return true;
+	/**
+	 * @var WxAccount
+	 */
+	private $wechat;
+
+	/**
+	 * @param array $data
+	 *
+	 * @return bool|array
+	 */
+	public function check(array $data) {
+		$wxid = $this->options['wxid'] ?? false;
+		if (!$wxid) {
+			log_error('wxid not configured', 'oauth_wxapp');
+
+			return false;
+		}
+		$wechat = WxAccount::getWechat($wxid);
+		if (!$wechat) {
+			log_error($wxid . ' is not available', 'oauth_wxapp');
+
+			return false;
+		}
+
+		try {
+			$session = $wechat->miniApp->auth->session($data['code']);
+		} catch (\Exception $e) {
+			$session = null;
+			log_error($e->getMessage(), 'oauth_wxapp');
+
+			return false;
+		}
+		if (!$session) {
+			log_error('session not find', 'oauth_wxapp');
+
+			return false;
+		}
+		$data['session_key'] = $session['session_key'];
+		$data['openid']      = $session['openid'];
+		if ($session['unionid']) {
+			$data['unionid'] = $session['unionid'];
+		} else {
+			$data['unionid'] = $data['openid'];
+		}
+		$this->wechat = $wechat;
+
+		return $data;
 	}
 
-	public function getName() {
+	public function getName(): string {
 		return '小程序';
 	}
 
-	public function getDesc() {
+	public function getDesc(): string {
 		return '微信小程序登录';
 	}
 
-	public function getForm() {
+	public function getForm(): ?FormTable {
 		return new WxSetForm(true);
 	}
 
-	public function getOauthData() {
+	public function getOauthData(?array $meta = null): array {
+		if (!$this->wechat || !$meta) {
+			return [];
+		}
+		try {
+			$info = $this->wechat->miniApp->encryptor->decryptData($meta['session_key'],$meta['iv'],$meta['encryptData']);
+		} catch (DecryptException $e) {
+			$info = false;
+			log_error($e->getMessage(), 'oauth_wxapp');
+		}
 
-		return [];
+		return $info;
 	}
 }
