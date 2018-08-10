@@ -11,15 +11,15 @@
 namespace passport\classes;
 
 class EmailOauth extends BaseOauth {
-	public function check($data) {
+	public function check(array $data) {
 		return true;
 	}
 
-	public function getName() {
+	public function getName():string {
 		return '邮件';
 	}
 
-	public function getDesc() {
+	public function getDesc():string {
 		return '邮件登录';
 	}
 }

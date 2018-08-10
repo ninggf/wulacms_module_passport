@@ -11,15 +11,15 @@
 namespace passport\classes;
 
 class PhoneOauth extends BaseOauth {
-	public function check($data) {
+	public function check(array $data) {
 		return true;
 	}
 
-	public function getName() {
+	public function getName():string {
 		return '手机';
 	}
 
-	public function getDesc() {
+	public function getDesc():string {
 		return '手机号登录';
 	}
 }
