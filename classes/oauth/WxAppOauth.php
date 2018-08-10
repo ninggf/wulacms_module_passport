@@ -40,9 +40,8 @@ class WxAppOauth extends BaseOauth {
 
 			return false;
 		}
-
 		try {
-			$session = $wechat->miniApp->auth->session($data['code']);
+			$session = $wechat->miniApp->auth->session($data['meta']['code']);
 		} catch (\Exception $e) {
 			$session = null;
 			log_error($e->getMessage(), 'oauth_wxapp');
@@ -54,16 +53,16 @@ class WxAppOauth extends BaseOauth {
 
 			return false;
 		}
-		$data['session_key'] = $session['session_key'];
-		$data['openid']      = $session['openid'];
+		$rtn['session_key'] = $session['session_key'];
+		$rtn['openid']      = $session['openid'];
 		if ($session['unionid']) {
-			$data['unionid'] = $session['unionid'];
+			$rtn['unionid'] = $session['unionid'];
 		} else {
-			$data['unionid'] = $data['openid'];
+			$rtn['unionid'] = $session['openid'];
 		}
 		$this->wechat = $wechat;
 
-		return $data;
+		return $rtn;
 	}
 
 	public function getName(): string {
@@ -83,7 +82,7 @@ class WxAppOauth extends BaseOauth {
 			return [];
 		}
 		try {
-			$info = $this->wechat->miniApp->encryptor->decryptData($meta['session_key'],$meta['iv'],$meta['encryptData']);
+			$info = $this->wechat->miniApp->encryptor->decryptData($meta['session_key'],$meta['iv'],$meta['encryptedData']);
 		} catch (DecryptException $e) {
 			$info = false;
 			log_error($e->getMessage(), 'oauth_wxapp');

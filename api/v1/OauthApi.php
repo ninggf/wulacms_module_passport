@@ -78,7 +78,6 @@ class OauthApi extends API {
 	 * @throws
 	 */
 	public function loginPost(string $type, string $openid, string $device, string $cid, string $unionid = '', string $recCode = '', string $channel = '', array $meta = null) {
-
 		if (empty($openid)) {
 			$this->error(601, 'OPENID为空');
 		}

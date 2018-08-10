@@ -43,9 +43,8 @@ class OauthApp extends Table {
 			$ids  = array_keys($apps);
 			$sql  = $this->find(['type IN' => $ids], 'type,status,ios,android,web,pc,h5,ipad,pad,options');
 			$list = $sql->toArray(null, 'type');
-
 			foreach ($apps as $id => $app) {
-				$opts = @json_decode($list['options'], true);
+				$opts = @json_decode($list[$id]['options'], true);
 				if ($opts) {
 					$app->setOptions($opts);
 				}
@@ -59,7 +58,6 @@ class OauthApp extends Table {
 				$data[ $id ] = $list[ $id ];
 			}
 		}
-
 		return $data;
 	}
 
