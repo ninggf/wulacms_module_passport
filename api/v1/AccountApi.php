@@ -96,22 +96,11 @@ class AccountApi extends API {
 		if ($needRecCode && empty($code)) {
 			$this->error(800, '请填写推荐码');
 		}
-
-		//		if (!RegisterUtil::checkRecCode($recCode)) {
-		//			$this->error(801, '推荐码不可用');
-		//		}
-		//28大神,不用处理师傅id
-		$ds28_mid = 0;
-		if ($recCode && $channel && preg_match('/28ds/i', $channel)) {
-			$ds28_mid = (int)$recCode;
-			$recCode  = '';
-		}
 		//recode 传用户师父id
 		if ($recCode && is_numeric($recCode)) {
 			$data['parent'] = (int)$recCode;
 			$recCode        = '';
 		}
-
 		if (!RegisterUtil::limit($ip)) {
 			$this->error(406, '不允许注册');
 		}
@@ -139,10 +128,6 @@ class AccountApi extends API {
 		$id               = $table->newAccount($data);
 		if (!$id) {
 			$this->error(500, '内部错误');
-		}
-		if ($ds28_mid) {
-			$ds_arr = ['mid' => $ds28_mid, 'channel' => $channel];
-			fire('passport\onPassportCreated28', $id, $ds_arr);
 		}
 
 		return ['uid' => $id];

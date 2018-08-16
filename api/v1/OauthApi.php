@@ -188,17 +188,6 @@ class OauthApi extends API {
 				}
 				$pa['status'] = 1;
 				$pa['ip']     = Request::getIp();
-				$ds_arr       = [];
-				if (isset($meta['recCode'])) {
-					$parent = (int)$meta['recCode'];
-					unset($meta['recCode']);
-					if (preg_match('/28ds/i', $channel)) {
-						$ds_arr['mid']     = $parent;
-						$ds_arr['channel'] = $channel;
-					} else {
-						$pa['parent'] = $parent;
-					}
-				}
 				$table = new PassportTable();
 				$pid   = $table->addPassport($pa);
 				if ($pid && $dbx->update('{oauth}')->set(['passport_id' => $pid])->where(['id' => $oauth['id']])->exec()) {
