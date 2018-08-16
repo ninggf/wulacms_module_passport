@@ -438,9 +438,11 @@ class AccountApi extends API {
 	 * @param int    $force    强制绑定，将清空原账户数据
 	 *
 	 * @paramo  int status 绑定结果,1绑定成功
+	 * @paramo  int force  绑定验证值，此时status为0
 	 *
 	 * @return array {
-	 *  "status":1
+	 *  "status":1,
+	 *  "force":1212
 	 * }
 	 *
 	 * @error   403=>TOKEN为空
@@ -450,6 +452,7 @@ class AccountApi extends API {
 	 * @error   401=>未知终端
 	 * @error   405=>手机号已经存在
 	 * @error   500=>内部错误
+	 * @error   701=>非法绑定操作
 	 * @error   900=>绑定失败
 	 * @error   901=>此账户已经绑定过手机号了
 	 *
@@ -465,8 +468,14 @@ class AccountApi extends API {
 		if (!preg_match('/^1[3456789]\d{9}$/', $phone)) {
 			$this->error(407, '手机号码格式不对');
 		}
-		if (!BindTemplate::validate($code)) {
+		if ($force && !BindTemplate::validate($code)) {
 			$this->error(408, '验证码不正确');
+		}
+		if ($force) {
+			$forceVal = sess_get('forceVal');
+			if ($force != $forceVal) {
+				$this->error('701', '非法绑定操作');
+			}
 		}
 		if (!ClientApi::checkClient($cid)) {
 			$this->error(401, '未知终端');
@@ -485,9 +494,13 @@ class AccountApi extends API {
 					return false;
 				}
 
-				$passport = $dbx->select('OA.id,OA.passport_id')->from('{oauth} AS OA')->where(['type' => 'phone', 'open_id' => $phone])->get();
+				$passport = $dbx->select('OA.id,OA.passport_id')->from('{oauth} AS OA')->where([
+					'type'    => 'phone',
+					'open_id' => $phone
+				])->get();
 				if ($passport) {
 					if ($force) {
+
 						//修改oauth的passport_id；
 						$rst = $dbx->update('{oauth}')->set(['passport_id' => $info['uid']])->where(['id' => $passport['id']])->exec();
 						//更新原passport表中手机对应的phone为空。
@@ -532,6 +545,11 @@ class AccountApi extends API {
 				$this->error($error);
 			}
 		} catch (RestException $re) {
+			if ($re->getCode() == 405) {
+				$_SESSION['forceVal'] = rand(12398, 20982123);
+
+				return ['status' => 0, 'force' => $_SESSION['forceVal']];
+			}
 			throw $re;
 		} catch (\Exception $e) {
 			$this->error(500, '内部错误');
