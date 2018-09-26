@@ -11,10 +11,20 @@
 namespace passport\classes\oauth;
 
 use passport\classes\BaseOauth;
+use passport\classes\form\QqSetForm;
+use wulaphp\form\FormTable;
 
 class WebQqOauth extends BaseOauth {
 	public function check(array $data) {
-		return true;
+		$app_id = $this->options['app_id'] ?? false;
+		if (!$data['openid'] || !$data['meta']['accessToken'] || !$app_id) {
+			log_error('openid or accessToken appid not find', 'oauth_qq');
+
+			return false;
+		}
+		$qq_check = $this->checkQq($data['openid'], $data['meta']['accessToken'], $app_id);
+
+		return $qq_check;
 	}
 
 	public function getName(): string {
@@ -23,5 +33,9 @@ class WebQqOauth extends BaseOauth {
 
 	public function getDesc(): string {
 		return '网页QQ登录';
+	}
+
+	public function getForm(): ?FormTable {
+		return new QqSetForm(true);
 	}
 }

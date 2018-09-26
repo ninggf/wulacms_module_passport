@@ -10,6 +10,8 @@
 
 namespace passport\classes;
 
+use curlient\Curlient;
+use wulaphp\app\App;
 use wulaphp\form\FormTable;
 
 abstract class BaseOauth implements IOauth {
@@ -40,5 +42,52 @@ abstract class BaseOauth implements IOauth {
 		$meta = is_array($meta) ? $meta : [];
 
 		return $meta;
+	}
+
+	/**
+	 * 微信登录校验
+	 *
+	 * @param string $openid
+	 * @param string $access_token
+	 *
+	 * @return bool
+	 */
+	public function checkWechat(string $openid, string $access_token): bool {
+		$url         = "https://api.weixin.qq.com/sns/userinfo?access_token={$access_token}&openid={$openid}&lang=zh_CN";
+		$Curl        = new Curlient();
+		$wechat_data = $Curl->request($url)->json();
+		if (!$wechat_data) {
+			log_error('wechat_data not find', 'oauth_wechat');
+
+			return false;
+		}
+		if (!isset($wechat_data['openid'])) {
+			log_error('invalid wechat_data msg --->' . json_encode($wechat_data), 'oauth_wechat');
+
+			return false;
+		}
+
+		return true;
+
+	}
+
+	/**
+	 * qq 校验
+	 *
+	 * @param string $openid
+	 * @param string $access_token
+	 *
+	 * @return bool
+	 */
+	public function checkQq(string $openid, string $access_token, string $appid): bool {
+		$url  = "https://graph.qq.com/user/get_user_info?access_token={$access_token}&openid={$openid}&oauth_consumer_key={$appid}";
+		$Curl = new Curlient();
+		$res  = $Curl->request($url)->json();
+		if ($res['ret'] == 0) {
+			return true;
+		}
+		log_error('invalid qq_data msg --->' . json_encode($res), 'oauth_qq');
+
+		return false;
 	}
 }

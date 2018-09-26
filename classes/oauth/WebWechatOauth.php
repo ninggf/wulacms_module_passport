@@ -16,7 +16,14 @@ use wulaphp\form\FormTable;
 
 class WebWechatOauth extends BaseOauth {
 	public function check(array $data) {
-		return true;
+		if (!$data['openid'] || !$data['meta']['accessToken']) {
+			log_error('openid or accessToken not find', 'oauth_wechat');
+
+			return false;
+		}
+		$rtn = $this->checkWechat($data['openid'], $data['meta']['accessToken']);
+
+		return $rtn;
 	}
 
 	public function getName(): string {
