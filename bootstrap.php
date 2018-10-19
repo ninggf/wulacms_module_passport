@@ -31,7 +31,7 @@ class PassportModule extends CmfModule {
 	}
 
 	public function getAuthor() {
-		return 'Leo Ning';
+		return 'wulacms team';
 	}
 
 	public function getVersionList() {
@@ -176,7 +176,7 @@ class PassportModule extends CmfModule {
 	 * @bind passport\onWebForceLogout
 	 */
 	public static function webForceLogout($tokens) {
-		AccountApi::forceLogout($tokens, true);
+		AccountApi::forceLogout($tokens,true);
 	}
 
 	/**
