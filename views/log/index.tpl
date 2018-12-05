@@ -1,7 +1,7 @@
 <section class="hbox stretch wulaui" id="oauth-page">
     <section>
         <div class="vbox">
-            <header class="bg-light header b-b clearfix">
+            <header class="bg-light lt header b-b clearfix">
                 <div class="row m-t-sm">
                     <div class="col-xs-12 m-b-xs text-right">
                         <form id="search-form" class="form-inline" data-table-form="#table">
@@ -49,7 +49,7 @@
     </section>
     <aside class="aside aside-sm b-l hidden-xs">
         <div class="vbox">
-            <header class="bg-light dk header b-b">
+            <header class="bg-light lt header b-b">
                 <p>第三方应用</p>
             </header>
             <section class="hidden-xs scrollable m-t-xs">
@@ -68,7 +68,7 @@
     </aside>
 </section>
 <script>
-	layui.use(['jquery', 'bootstrap', 'wulaui'], function ($, b, wui) {
+	layui.use(['jquery', 'bootstrap', 'wulaui'], function ($) {
 		var group = $('#app-list');
 		group.find('a').click(function () {
 			var me = $(this), mp = me.closest('li');

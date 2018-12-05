@@ -1,7 +1,7 @@
 <section class="hbox stretch wulaui layui-hide" id="passport-page">
     <section>
         <div class="vbox">
-            <header class="bg-light header b-b clearfix">
+            <header class="bg-light lt header b-b clearfix">
                 <div class="row m-t-sm">
                     <div class="col-sm-6 hidden-xs m-b-xs">
                         <a href="{'passport/edit'|app}" class="btn btn-sm btn-success edit-admin" data-ajax="dialog"

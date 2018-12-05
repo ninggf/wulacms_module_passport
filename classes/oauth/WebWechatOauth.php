@@ -15,26 +15,30 @@ use passport\classes\form\WxSetForm;
 use wulaphp\form\FormTable;
 
 class WebWechatOauth extends BaseOauth {
-	public function check(array $data) {
-		if (!$data['openid'] || !$data['meta']['accessToken']) {
-			log_error('openid or accessToken not find', 'oauth_wechat');
+    public function check(array $data) {
+        if (!$data['openid'] || !$data['meta']['accessToken']) {
+            log_error('openid or accessToken not find', 'oauth_wechat');
 
-			return false;
-		}
-		$rtn = $this->checkWechat($data['openid'], $data['meta']['accessToken']);
+            return false;
+        }
+        $rtn = $this->checkWechat($data['openid'], $data['meta']['accessToken']);
 
-		return $rtn;
-	}
+        return $rtn;
+    }
 
-	public function getName(): string {
-		return '网页微信';
-	}
+    public function supports(): array {
+        return ['ios' => 0, 'ipad' => 0, 'android' => 0, 'pad' => 0, 'web' => 1, 'pc' => 0, 'h5' => 0];
+    }
 
-	public function getDesc(): string {
-		return '网页微信登录';
-	}
+    public function getName(): string {
+        return '网页微信';
+    }
 
-	public function getForm(): ?FormTable {
-		return new WxSetForm(true);
-	}
+    public function getDesc(): string {
+        return '网页微信登录';
+    }
+
+    public function getForm(): ?FormTable {
+        return new WxSetForm(true);
+    }
 }

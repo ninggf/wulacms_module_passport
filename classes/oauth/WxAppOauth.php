@@ -17,77 +17,81 @@ use weixin\classes\WxAccount;
 use wulaphp\form\FormTable;
 
 class WxAppOauth extends BaseOauth {
-	/**
-	 * @var WxAccount
-	 */
-	private $wechat;
+    /**
+     * @var WxAccount
+     */
+    private $wechat;
 
-	/**
-	 * @param array $data
-	 *
-	 * @return bool|array
-	 */
-	public function check(array $data) {
-		$wxid = $this->options['wxid'] ?? false;
-		if (!$wxid) {
-			log_error('wxid not configured', 'oauth_wxapp');
+    /**
+     * @param array $data
+     *
+     * @return bool|array
+     */
+    public function check(array $data) {
+        $wxid = $this->options['wxid'] ?? false;
+        if (!$wxid) {
+            log_error('wxid not configured', 'oauth_wxapp');
 
-			return false;
-		}
-		$wechat = WxAccount::getWechat($wxid);
-		if (!$wechat) {
-			log_error($wxid . ' is not available', 'oauth_wxapp');
+            return false;
+        }
+        $wechat = WxAccount::getWechat($wxid);
+        if (!$wechat) {
+            log_error($wxid . ' is not available', 'oauth_wxapp');
 
-			return false;
-		}
-		try {
-			$session = $wechat->miniApp->auth->session($data['meta']['code']);
-		} catch (\Exception $e) {
-			$session = null;
-			log_error($e->getMessage(), 'oauth_wxapp');
+            return false;
+        }
+        try {
+            $session = $wechat->miniApp->auth->session($data['meta']['code']);
+        } catch (\Exception $e) {
+            $session = null;
+            log_error($e->getMessage(), 'oauth_wxapp');
 
-			return false;
-		}
-		if (!$session) {
-			log_error('session not find', 'oauth_wxapp');
+            return false;
+        }
+        if (!$session) {
+            log_error('session not find', 'oauth_wxapp');
 
-			return false;
-		}
-		$rtn['session_key'] = $session['session_key'];
-		$rtn['openid']      = $session['openid'];
-		if ($session['unionid']) {
-			$rtn['unionid'] = $session['unionid'];
-		} else {
-			$rtn['unionid'] = $session['openid'];
-		}
-		$this->wechat = $wechat;
+            return false;
+        }
+        $rtn['session_key'] = $session['session_key'];
+        $rtn['openid']      = $session['openid'];
+        if ($session['unionid']) {
+            $rtn['unionid'] = $session['unionid'];
+        } else {
+            $rtn['unionid'] = $session['openid'];
+        }
+        $this->wechat = $wechat;
 
-		return $rtn;
-	}
+        return $rtn;
+    }
 
-	public function getName(): string {
-		return '小程序';
-	}
+    public function supports(): array {
+        return ['ios' => 1, 'ipad' => 1, 'android' => 1, 'pad' => 1, 'web' => 0, 'pc' => 0, 'h5' => 0];
+    }
 
-	public function getDesc(): string {
-		return '微信小程序登录';
-	}
+    public function getName(): string {
+        return '小程序';
+    }
 
-	public function getForm(): ?FormTable {
-		return new WxSetForm(true);
-	}
+    public function getDesc(): string {
+        return '微信小程序登录';
+    }
 
-	public function getOauthData(?array $meta = null): array {
-		if (!$this->wechat || !$meta) {
-			return [];
-		}
-		try {
-			$info = $this->wechat->miniApp->encryptor->decryptData($meta['session_key'],$meta['iv'],$meta['encryptedData']);
-		} catch (DecryptException $e) {
-			$info = false;
-			log_error($e->getMessage(), 'oauth_wxapp');
-		}
+    public function getForm(): ?FormTable {
+        return new WxSetForm(true);
+    }
 
-		return $info;
-	}
+    public function getOauthData(?array $meta = null): array {
+        if (!$this->wechat || !$meta) {
+            return [];
+        }
+        try {
+            $info = $this->wechat->miniApp->encryptor->decryptData($meta['session_key'], $meta['iv'], $meta['encryptedData']);
+        } catch (DecryptException $e) {
+            $info = false;
+            log_error($e->getMessage(), 'oauth_wxapp');
+        }
+
+        return $info;
+    }
 }

@@ -15,27 +15,31 @@ use passport\classes\form\QqSetForm;
 use wulaphp\form\FormTable;
 
 class QqOauth extends BaseOauth {
-	public function check(array $data) {
-		$app_id = $this->options['app_id'] ?? false;
-		if (!$data['openid'] || !$data['meta']['accessToken'] || !$app_id) {
-			log_error('openid or accessToken appid not find', 'oauth_qq');
+    public function check(array $data) {
+        $app_id = $this->options['app_id'] ?? false;
+        if (!$data['openid'] || !$data['meta']['accessToken'] || !$app_id) {
+            log_error('openid or accessToken appid not find', 'oauth_qq');
 
-			return false;
-		}
-		$qq_check = $this->checkQq($data['openid'], $data['meta']['accessToken'], $app_id);
+            return false;
+        }
+        $qq_check = $this->checkQq($data['openid'], $data['meta']['accessToken'], $app_id);
 
-		return $qq_check;
-	}
+        return $qq_check;
+    }
 
-	public function getName(): string {
-		return 'QQ';
-	}
+    public function supports(): array {
+        return ['ios' => 1, 'ipad' => 1, 'android' => 1, 'pad' => 1, 'web' => 0, 'pc' => 0, 'h5' => 0];
+    }
 
-	public function getDesc(): string {
-		return '手机端QQ登录';
-	}
+    public function getName(): string {
+        return 'QQ';
+    }
 
-	public function getForm(): ?FormTable {
-		return new QqSetForm(true);
-	}
+    public function getDesc(): string {
+        return '手机端QQ登录';
+    }
+
+    public function getForm(): ?FormTable {
+        return new QqSetForm(true);
+    }
 }
