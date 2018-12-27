@@ -40,4 +40,10 @@ interface IOauth {
     public function supports(): array;
 
     public function getOauthData(?array $meta = null): array;
+
+    /**
+     * 授权url
+     * @return string
+     */
+    public function auth_url(): string;
 }

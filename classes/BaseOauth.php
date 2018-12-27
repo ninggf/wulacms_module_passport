@@ -103,4 +103,8 @@ abstract class BaseOauth implements IOauth {
 
         return false;
     }
+
+    public function auth_url(): string {
+        return '';
+    }
 }

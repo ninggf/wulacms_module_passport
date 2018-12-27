@@ -58,6 +58,12 @@ class AuthController extends Controller {
 
 			}
 			$info = $this->passport->info();
+			//检测是否绑定了手机
+			if($info['phone']){
+				$info['bind_phone'] = 1;
+			}else{
+				$info['bind_phone'] = 0;
+			}
 			unset($info['phone'], $info['email']);
 			$info['token'] = session_id();
 			if ($callback) {

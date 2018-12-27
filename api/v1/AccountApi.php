@@ -476,8 +476,9 @@ class AccountApi extends API {
             $this->unauthorized();
         }
         try {
-            $db  = App::db();
-            $rst = $db->trans(function (DatabaseConnection $dbx) use ($phone, $info, $device, $password, $force) {
+            $force = 0;
+            $db    = App::db();
+            $rst   = $db->trans(function (DatabaseConnection $dbx) use ($phone, $info, $device, $password, $force) {
                 $pas = $dbx->select('phone')->from('{passport}')->where(['id' => $info['uid']])->get('phone');
                 if ($pas || $pas == $phone) {
                     throw_exception('901@此账户已经绑定过手机号了');
@@ -510,7 +511,9 @@ class AccountApi extends API {
                         }
                         throw_exception('900@绑定失败');
                     }
-                    throw_exception('405@手机已经存在');
+                    throw_exception('406@手机已经存在');
+
+                    return false;
                 }
                 $data['type']        = 'phone';
                 $data['open_id']     = $phone;
@@ -721,7 +724,7 @@ class AccountApi extends API {
      * @paramo  string avatar 头像
      * @paramo  int gender 性别:0未知;1男;2女
      * @paramo  string rec_code 推荐码
-     * @paramo  array binds 已经绑定的登录方式
+     * @paramo  string binds 已经绑定的登录方式
      * @paramo  int status 状态
      *
      * @return array {
@@ -733,7 +736,7 @@ class AccountApi extends API {
      *  "avatar":"http://adfasdf.com/afasd.png",
      *  "gender":1,
      *  "rec_code":"10",
-     *  "binds":["qq","wechat"],
+     *  "binds":"qq,wechat",
      *  "status":1
      * }
      * @error   403=>TOKEN为空
@@ -804,9 +807,10 @@ class AccountApi extends API {
                     $this->error(404, '更新数据出错');
                 }
             }
-            $dbx           = App::db();
-            $oauth         = $dbx->select('type')->from('{oauth}')->where(['passport_id' => $info['uid']])->toArray('type');
-            $info['binds'] = $oauth;
+            $dbx   = App::db();
+            $oauth = $dbx->select('type')->from('{oauth}')->where(['passport_id' => $info['uid']])->toArray('type');
+            //array->string
+            $info['binds'] = implode(',', $oauth);
 
             return $info;
         } catch (RestException $re) {
@@ -912,6 +916,10 @@ class AccountApi extends API {
                 $oauthMeta = $dbx->select('name,value')->from('{oauth_meta}')->where(['oauth_id' => $oauthId])->toArray('value', 'name');
                 if ($oauthMeta) {
                     $info = $oauthMeta;
+                    //第三方登录如果有头像作为头像 最终以passport的avatar为准
+                    if ($info['profile_image_url']) {
+                        $info['avatar'] = the_media_src($info['profile_image_url']);
+                    }
                 }
                 $info['uid']      = $passport['id'];
                 $info['token']    = $session['token'];
@@ -923,7 +931,7 @@ class AccountApi extends API {
                     $info['phone'] = $passport['phone'];
                 }
                 if ($passport['avatar']) {
-                    $info['avatar'] = $passport['avatar'];
+                    $info['avatar'] = the_media_src($passport['avatar']);
                 }
                 if ($passport['gender']) {
                     $info['gender'] = $passport['gender'];
