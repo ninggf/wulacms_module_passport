@@ -17,7 +17,7 @@ class WxSetForm extends FormTable {
 	use JQueryValidator;
 	public $table = null;
 	/**
-	 * 微信号
+	 * 小程序Appid
 	 * @var \backend\form\TextField
 	 * @type string
 	 * @required

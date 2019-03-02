@@ -30,6 +30,12 @@
         <td class="{if $row.h5}active{/if}">
             <i class="fa fa-check text-success text-active"></i>
         </td>
+        <td class="{if $row.wxgame}active{/if}">
+            <i class="fa fa-check text-success text-active"></i>
+        </td>
+        <td class="{if $row.wxapp}active{/if}">
+            <i class="fa fa-check text-success text-active"></i>
+        </td>
         <td class="text-center">
             <a href="{'passport/apps/cfg'|app}/{$row.id}" class="cfg-app" data-ajax="dialog" data-area="600px,auto"
                title="配置[{$row.name}]">
@@ -39,7 +45,7 @@
     </tr>
     {foreachelse}
     <tr>
-        <td colspan="12">无数据</td>
+        <td colspan="14">无数据</td>
     </tr>
 {/foreach}
 </tbody>

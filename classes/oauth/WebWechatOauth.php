@@ -11,7 +11,6 @@
 namespace passport\classes\oauth;
 
 use passport\classes\BaseOauth;
-use passport\classes\form\WxSetForm;
 use wulaphp\form\FormTable;
 
 class WebWechatOauth extends BaseOauth {
@@ -39,6 +38,6 @@ class WebWechatOauth extends BaseOauth {
     }
 
     public function getForm(): ?FormTable {
-        return new WxSetForm(true);
+        return null;
     }
 }

@@ -16,6 +16,7 @@ use passport\classes\oauth\SimpleOauth;
 use passport\classes\oauth\WebQqOauth;
 use passport\classes\oauth\WebWechatOauth;
 use passport\classes\oauth\WechatOauth;
+use passport\classes\oauth\WeixinOauth;
 use passport\classes\oauth\WxAppOauth;
 use passport\classes\PhoneOauth;
 use wulaphp\db\Table;
@@ -75,6 +76,7 @@ class OauthApp extends Table {
                 'wechat'    => new WechatOauth(),
                 'webqq'     => new WebQqOauth(),
                 'webwechat' => new WebWechatOauth(),
+                'weixin'    => new WeixinOauth(),
                 'wxapp'     => new WxAppOauth(),
                 'simple'    => new SimpleOauth()
             ]);

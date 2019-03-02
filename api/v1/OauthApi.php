@@ -112,7 +112,6 @@ class OauthApi extends API {
         /**@var \passport\classes\IOauth $oapp */
         $oapp    = $oauthApp['oauth'];
         $checked = $oapp->check(['openid' => $openid, 'unionid' => $unionid, 'meta' => $meta]);
-
         if (!$checked) {
             $this->error(407, '[' . $oapp->getName() . ']数据校验失败了');
         }
@@ -143,7 +142,7 @@ class OauthApi extends API {
                 'type'    => $type,
                 'open_id' => $openid
             ])->get();
-            //没有第三方数据
+            //没有第三方数据,创建OAUTH数据
             if (!$oauth) {
                 $oauth['passport_id'] = $passport_id;
                 $oauth['type']        = $type;
@@ -157,18 +156,8 @@ class OauthApi extends API {
                 } else {
                     throw_exception('无法创建第三方登录信息');
                 }
-            } else if (!$oauth['passport_id'] && $passport_id) {
-                $rst = $dbx->update('{oauth}')->set([
-                    'passport_id' => $passport_id,
-                    'union_id'    => $unionid,
-                    'update_time' => time()
-                ])->where(['id' => $oauth['id']])->exec();
-                if (!$rst) {
-                    throw_exception('更新登录数据失败');
-                }
-                $oauth['passport_id'] = $passport_id;
-                $oauth['union_id']    = $unionid;
             } else {
+                //更新OAUTH数据
                 $rst = $dbx->update('{oauth}')->set([
                     'update_time' => time(),
                     'union_id'    => $unionid
@@ -216,6 +205,7 @@ class OauthApi extends API {
                     if (is_array($value)) {
                         $value = json_encode($value);
                     }
+                    $key = strtolower($key);
                     $rtn = $dbx->cud("INSERT INTO {oauth_meta} (oauth_id,name,value,remark) VALUES(%d,%s,%s,%s)", $oauth['id'], $key, $value, $remark);
                     if (!$rtn) {
                         $dbx->cud('UPDATE {oauth_meta} SET value=%s,remark=%s WHERE oauth_id=%d AND name=%s', $value, $remark, $oauth['id'], $key);

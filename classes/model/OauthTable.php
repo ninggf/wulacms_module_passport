@@ -69,4 +69,30 @@ class OauthTable extends Table {
 
         return $meta->getMeta($id, $name);
     }
+
+    /**
+     * 根据UnionID获取PassportID
+     *
+     * @param string $app
+     * @param string $unionid
+     *
+     * @return int
+     */
+    public function getPassportIdByUnionId($app, $unionid) {
+        if ($unionid) {
+            try {
+                $db  = $this->db();
+                $uid = $db->select('passport_id')->from('{oauth}')->where([
+                    'type'     => $app,
+                    'union_id' => $unionid
+                ])->get('passport_id');
+
+                return intval($uid);
+            } catch (\Exception $e) {
+
+            }
+        }
+
+        return 0;
+    }
 }
